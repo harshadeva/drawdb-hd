@@ -56,6 +56,7 @@ export default function Table({
   setLinkingLine,
   relationshipMode = null,
   isRelationshipSource = false,
+  startTableResize,
 }) {
   const [hoveredField, setHoveredField] = useState(null);
   const { layout } = useLayout();
@@ -83,9 +84,11 @@ export default function Table({
     [settings.mode],
   );
 
+  const width = tableData.width ?? settings.tableWidth;
+
   const height = getTableHeight(
     tableData,
-    settings.tableWidth,
+    width,
     settings.showComments,
     relationships,
   );
@@ -244,7 +247,7 @@ export default function Table({
         key={tableData.id}
         x={tableData.x}
         y={tableData.y}
-        width={settings.tableWidth}
+        width={width}
         height={height}
         className={`group drop-shadow-lg rounded-md ${
           relationshipMode ? "cursor-crosshair" : "cursor-move"
@@ -253,7 +256,7 @@ export default function Table({
       >
         <div
           onDoubleClick={openEditor}
-          className={`border-2 hover:border-dashed hover:border-blue-500
+          className={`relative border-2 hover:border-dashed hover:border-blue-500
                select-none rounded-lg w-full ${
                  settings.mode === "light"
                    ? "bg-zinc-100 text-zinc-800"
@@ -267,6 +270,28 @@ export default function Table({
                }`}
           style={{ direction: "ltr" }}
         >
+          {!relationshipMode && !layout.readOnly && startTableResize && (
+            <>
+              <div
+                className="absolute top-0 left-0 h-full w-2 cursor-ew-resize z-10"
+                title={t("resize")}
+                onPointerDown={(e) => {
+                  if (!e.isPrimary) return;
+                  e.stopPropagation();
+                  startTableResize(tableData.id, "l", tableData.x, width);
+                }}
+              />
+              <div
+                className="absolute top-0 right-0 h-full w-2 cursor-ew-resize z-10"
+                title={t("resize")}
+                onPointerDown={(e) => {
+                  if (!e.isPrimary) return;
+                  e.stopPropagation();
+                  startTableResize(tableData.id, "r", tableData.x, width);
+                }}
+              />
+            </>
+          )}
           <div
             className="h-[10px] w-full rounded-t-md"
             style={{ backgroundColor: tableData.color }}
@@ -552,14 +577,14 @@ export default function Table({
                   getFieldOffsetY(
                     visibleFields,
                     index,
-                    settings.tableWidth,
+                    width,
                     settings.showComments,
                   ) +
                   tableHeaderHeight +
                   tableColorStripHeight +
                   getCommentHeight(
                     tableData.comment,
-                    settings.tableWidth,
+                    width,
                     settings.showComments,
                   ) +
                   14;

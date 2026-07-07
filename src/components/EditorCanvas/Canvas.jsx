@@ -36,6 +36,29 @@ import { getRectFromEndpoints, isInsideRect } from "../../utils/rect";
 import { State, noteWidth } from "../../data/constants";
 import { nanoid } from "nanoid";
 
+// Minimum width a table can be resized down to (matches SetTableWidth modal).
+const minTableWidth = 180;
+
+// Naive English singularization so a foreign key on a plural parent table
+// reads naturally, e.g. "users" -> "user_id" instead of "users_id".
+const singularize = (name) => {
+  if (!name) return name;
+  const lower = name.toLowerCase();
+  if (lower.endsWith("ies") && name.length > 3) return name.slice(0, -3) + "y";
+  if (
+    name.length > 3 &&
+    (lower.endsWith("ses") ||
+      lower.endsWith("xes") ||
+      lower.endsWith("zes") ||
+      lower.endsWith("ches") ||
+      lower.endsWith("shes"))
+  )
+    return name.slice(0, -2);
+  if (lower.endsWith("ss")) return name;
+  if (lower.endsWith("s") && name.length > 1) return name.slice(0, -1);
+  return name;
+};
+
 export default function Canvas() {
   const { t } = useTranslation();
 
@@ -46,8 +69,14 @@ export default function Canvas() {
     pointer,
   } = canvasContextValue;
 
-  const { tables, updateTable, relationships, addRelationship, database } =
-    useDiagram();
+  const {
+    tables,
+    updateTable,
+    relationships,
+    addRelationship,
+    updateRelationship,
+    database,
+  } = useDiagram();
   const { setSaveState } = useSaveState();
   const { areas, updateArea } = useAreas();
   const { notes, updateNote } = useNotes();
@@ -119,6 +148,16 @@ export default function Canvas() {
     cursorStart: { x: 0, y: 0 },
   });
   const [areaResize, setAreaResize] = useState({ id: -1, dir: "none" });
+  const notResizingTable = {
+    id: -1,
+    dir: "none",
+    startX: 0,
+    startWidth: 0,
+    startTableX: 0,
+  };
+  const [tableResize, setTableResize] = useState(notResizingTable);
+  // manual routing: which relationship waypoint is being dragged
+  const [waypointDrag, setWaypointDrag] = useState(null);
   const [areaInitDimensions, setAreaInitDimensions] = useState({
     x: 0,
     y: 0,
@@ -165,13 +204,14 @@ export default function Canvas() {
         currentCoords: { x: table.x, y: table.y },
         initialCoords: { x: table.x, y: table.y },
       };
+      const tableWidth = table.width ?? settings.tableWidth;
       const tableRect = {
         x: table.x,
         y: table.y,
-        width: settings.tableWidth,
+        width: tableWidth,
         height: getTableHeight(
           table,
-          settings.tableWidth,
+          tableWidth,
           settings.showComments,
           relationships,
         ),
@@ -290,7 +330,15 @@ export default function Canvas() {
     }
 
     if (!isSelected) {
-      setBulkSelectedElements([elementInBulk]);
+      // dragging an area carries the tables and notes inside it along with it
+      if (type === ObjectType.AREA) {
+        setBulkSelectedElements([
+          elementInBulk,
+          ...getElementsInsideArea(element),
+        ]);
+      } else {
+        setBulkSelectedElements([elementInBulk]);
+      }
     }
     setDragging({
       id: element.id,
@@ -300,6 +348,48 @@ export default function Canvas() {
         y: pointer.spaces.diagram.y - element.y,
       },
     });
+  };
+
+  // Tables/notes whose center lies within an area — used so moving the area
+  // moves its contents along with it.
+  const getElementsInsideArea = (area) => {
+    const withinArea = (x, y) =>
+      x >= area.x &&
+      x <= area.x + area.width &&
+      y >= area.y &&
+      y <= area.y + area.height;
+
+    const contained = [];
+
+    tables.forEach((table) => {
+      if (table.locked) return;
+      const w = table.width ?? settings.tableWidth;
+      const h = getTableHeight(table, w, settings.showComments, relationships);
+      if (withinArea(table.x + w / 2, table.y + h / 2)) {
+        contained.push({
+          id: table.id,
+          type: ObjectType.TABLE,
+          currentCoords: { x: table.x, y: table.y },
+          initialCoords: { x: table.x, y: table.y },
+        });
+      }
+    });
+
+    notes.forEach((note) => {
+      if (note.locked) return;
+      const w = note.width ?? noteWidth;
+      const h = note.height ?? 0;
+      if (withinArea(note.x + w / 2, note.y + h / 2)) {
+        contained.push({
+          id: note.id,
+          type: ObjectType.NOTE,
+          currentCoords: { x: note.x, y: note.y },
+          initialCoords: { x: note.x, y: note.y },
+        });
+      }
+    });
+
+    return contained;
   };
 
   const coordinatesAfterSnappingToGrid = ({ x, y }) => {
@@ -343,6 +433,37 @@ export default function Canvas() {
         endX: pointer.spaces.diagram.x,
         endY: pointer.spaces.diagram.y,
       });
+      return;
+    }
+
+    if (waypointDrag) {
+      const rel = relationships.find((r) => r.id === waypointDrag.relId);
+      if (rel) {
+        const points = [...(rel.points ?? [])];
+        points[waypointDrag.index] = coordinatesAfterSnappingToGrid(
+          pointer.spaces.diagram,
+        );
+        updateRelationship(waypointDrag.relId, { points });
+      }
+      return;
+    }
+
+    if (tableResize.id !== -1 && tableResize.dir !== "none") {
+      const dx = pointer.spaces.diagram.x - tableResize.startX;
+      const rawWidth =
+        tableResize.dir === "r"
+          ? tableResize.startWidth + dx
+          : tableResize.startWidth - dx;
+      const newWidth = Math.max(minTableWidth, Math.round(rawWidth));
+      if (tableResize.dir === "l") {
+        // keep the right edge of the dragged table anchored in place
+        updateTable(tableResize.id, {
+          width: newWidth,
+          x: tableResize.startTableX + (tableResize.startWidth - newWidth),
+        });
+      } else {
+        updateTable(tableResize.id, { width: newWidth });
+      }
       return;
     }
 
@@ -584,6 +705,53 @@ export default function Canvas() {
     if (linking) handleLinking();
     setLinking(false);
 
+    if (tableResize.id !== -1) {
+      const table = tables.find((tb) => tb.id === tableResize.id);
+      if (table && (table.width ?? settings.tableWidth) !== tableResize.startWidth) {
+        setUndoStack((prev) => [
+          ...prev,
+          {
+            action: Action.EDIT,
+            element: ObjectType.TABLE,
+            component: "self",
+            tid: tableResize.id,
+            undo: { width: tableResize.startWidth, x: tableResize.startTableX },
+            redo: { width: table.width, x: table.x },
+            message: t("edit_table", {
+              tableName: table.name,
+              extra: "[resize]",
+            }),
+          },
+        ]);
+        setRedoStack([]);
+      }
+      setTableResize(notResizingTable);
+      setSaveState(State.SAVING);
+    }
+
+    if (waypointDrag) {
+      const rel = relationships.find((r) => r.id === waypointDrag.relId);
+      if (rel) {
+        setUndoStack((prev) => [
+          ...prev,
+          {
+            action: Action.EDIT,
+            element: ObjectType.RELATIONSHIP,
+            rid: waypointDrag.relId,
+            undo: { points: waypointDrag.origPoints },
+            redo: { points: rel.points ?? [] },
+            message: t("edit_relationship", {
+              refName: rel.name,
+              extra: "[waypoint]",
+            }),
+          },
+        ]);
+        setRedoStack([]);
+      }
+      setWaypointDrag(null);
+      setSaveState(State.SAVING);
+    }
+
     if (areaResize.id !== -1 && didResize(areaResize.id)) {
       setUndoStack((prev) => [
         ...prev,
@@ -696,6 +864,22 @@ export default function Canvas() {
     setPendingRelTable(null);
   };
 
+  // Begins a horizontal resize of a single table's width by dragging its
+  // left ("l") or right ("r") edge.
+  const startTableResize = (tableId, dir, tableX, currentWidth) => {
+    if (layout.readOnly) return;
+    setPanning((old) => ({ ...old, isPanning: false }));
+    setDragging(notDragging);
+    pointer.setStyle("ew-resize");
+    setTableResize({
+      id: tableId,
+      dir,
+      startX: pointer.spaces.diagram.x,
+      startWidth: currentWidth ?? settings.tableWidth,
+      startTableX: tableX,
+    });
+  };
+
   // The toolbar cardinality is read as parent -> child (parent is clicked
   // first). A stored relationship is start -> end, and here start = child (FK)
   // and end = parent (PK), so the value must be inverted. This matches what
@@ -720,7 +904,7 @@ export default function Canvas() {
 
     const cardinality = toStoredCardinality(toolbarCardinality);
 
-    const baseName = `${parent.name}_${parentPk.name}`;
+    const baseName = `${singularize(parent.name)}_${parentPk.name}`;
     const existingNames = new Set(child.fields.map((f) => f.name));
     let fieldName = baseName;
     let suffix = 1;
@@ -751,6 +935,9 @@ export default function Canvas() {
       updateConstraint: Constraint.NONE,
       deleteConstraint: Constraint.NONE,
       name: `fk_${child.name}_${fieldName}_${parent.name}`,
+      // marks the FK column as one this tool created, so deleting the
+      // relationship can also remove that column (see del() in ControlPanel)
+      autoCreatedFk: true,
       id: nanoid(),
     };
 
@@ -772,16 +959,69 @@ export default function Canvas() {
     setRedoStack([]);
   };
 
+  // --- manual relationship routing (drag bend points) ---
+  const startWaypointDrag = (relId, index) => {
+    if (layout.readOnly) return;
+    const rel = relationships.find((r) => r.id === relId);
+    setPanning((old) => ({ ...old, isPanning: false }));
+    setDragging(notDragging);
+    pointer.setStyle("grabbing");
+    setWaypointDrag({ relId, index, origPoints: rel?.points ?? [] });
+  };
+
+  const insertWaypointAndDrag = (relId, insertIndex, point) => {
+    if (layout.readOnly) return;
+    const rel = relationships.find((r) => r.id === relId);
+    const origPoints = rel?.points ?? [];
+    const points = [...origPoints];
+    points.splice(insertIndex, 0, point);
+    updateRelationship(relId, { points });
+    setPanning((old) => ({ ...old, isPanning: false }));
+    setDragging(notDragging);
+    pointer.setStyle("grabbing");
+    setWaypointDrag({ relId, index: insertIndex, origPoints });
+  };
+
+  const removeWaypoint = (relId, index) => {
+    if (layout.readOnly) return;
+    const rel = relationships.find((r) => r.id === relId);
+    if (!rel) return;
+    const origPoints = rel.points ?? [];
+    const points = origPoints.filter((_, i) => i !== index);
+    setUndoStack((prev) => [
+      ...prev,
+      {
+        action: Action.EDIT,
+        element: ObjectType.RELATIONSHIP,
+        rid: relId,
+        undo: { points: origPoints },
+        redo: { points },
+        message: t("edit_relationship", {
+          refName: rel.name,
+          extra: "[waypoint]",
+        }),
+      },
+    ]);
+    setRedoStack([]);
+    updateRelationship(relId, { points });
+  };
+
   const handleRelationshipTableClick = (table) => {
     if (!pendingRelTable) {
       setPendingRelTable(table.id);
       return;
     }
-    if (pendingRelTable === table.id) return;
 
-    const parent = tables.find((tb) => tb.id === pendingRelTable);
+    // clicking the same table twice creates a self-referencing relationship
+    const parent =
+      pendingRelTable === table.id
+        ? table
+        : tables.find((tb) => tb.id === pendingRelTable);
     if (parent) createRelationshipFromTables(parent, table, relationshipMode);
+
+    // one relationship per selection: reset back to the default mouse tool
     setPendingRelTable(null);
+    setRelationshipMode(null);
   };
 
   useEventListener("keydown", (e) => {
@@ -920,7 +1160,13 @@ export default function Canvas() {
             />
           ))}
           {relationships.map((e) => (
-            <Relationship key={e.id} data={e} />
+            <Relationship
+              key={e.id}
+              data={e}
+              onWaypointDown={startWaypointDrag}
+              onSegmentDown={insertWaypointAndDrag}
+              onWaypointRemove={removeWaypoint}
+            />
           ))}
           {tables.map((table) => (
             <Table
@@ -931,6 +1177,7 @@ export default function Canvas() {
               setLinkingLine={setLinkingLine}
               relationshipMode={relationshipMode}
               isRelationshipSource={pendingRelTable === table.id}
+              startTableResize={startTableResize}
               onPointerDown={() => {
                 elementPointerDown = {
                   element: table,

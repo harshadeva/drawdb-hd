@@ -1,6 +1,11 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { Cardinality, ObjectType, Tab } from "../../data/constants";
-import { calcPath, calcCompositePath } from "../../utils/calcPath";
+import {
+  calcPath,
+  calcCompositePath,
+  calcAnchors,
+  calcWaypointPath,
+} from "../../utils/calcPath";
 import { useDiagram, useSettings, useLayout, useSelect } from "../../hooks";
 import { useTranslation } from "react-i18next";
 import { SideSheet } from "@douyinfe/semi-ui";
@@ -13,11 +18,17 @@ import {
 
 const labelFontSize = 16;
 
-export default function Relationship({ data }) {
+export default function Relationship({
+  data,
+  onWaypointDown,
+  onSegmentDown,
+  onWaypointRemove,
+}) {
   const { settings } = useSettings();
   const { tables, relationships } = useDiagram();
   const { layout } = useLayout();
-  const { selectedElement, setSelectedElement } = useSelect();
+  const { selectedElement, setSelectedElement, setBulkSelectedElements } =
+    useSelect();
   const { t } = useTranslation();
 
   const pathValues = useMemo(() => {
@@ -49,6 +60,8 @@ export default function Relationship({ data }) {
       endFieldIndices: pairs.map((p) =>
         getVisibleFieldIndex(endTable, p.endFieldId, relationships),
       ),
+      startTableWidth: startTable.width ?? settings.tableWidth,
+      endTableWidth: endTable.width ?? settings.tableWidth,
       startTable: {
         x: startTable.x,
         y: startTable.y,
@@ -62,7 +75,7 @@ export default function Relationship({ data }) {
         fields: endFields,
       },
     };
-  }, [tables, relationships, data]);
+  }, [tables, relationships, data, settings.tableWidth]);
 
   const isComposite = (pathValues?.startFieldIndices?.length ?? 0) > 1;
 
@@ -75,11 +88,36 @@ export default function Relationship({ data }) {
         startFieldIndices: pathValues.startFieldIndices,
         endFieldIndices: pathValues.endFieldIndices,
       },
-      settings.tableWidth,
+      pathValues.startTableWidth,
       1,
       settings.showComments,
+      pathValues.endTableWidth,
     );
-  }, [pathValues, isComposite, settings.tableWidth, settings.showComments]);
+  }, [pathValues, isComposite, settings.showComments]);
+
+  const points = useMemo(() => data.points ?? [], [data.points]);
+  const hasWaypoints = !isComposite && points.length > 0;
+
+  // Anchor points on each table edge when the line is manually routed.
+  const waypointGeom = useMemo(() => {
+    if (!pathValues || isComposite) return null;
+    const swPx = pathValues.startTableWidth;
+    const ewPx = pathValues.endTableWidth;
+    const firstRef = points[0] ?? {
+      x: pathValues.endTable.x + ewPx / 2,
+    };
+    const lastRef = points[points.length - 1] ?? {
+      x: pathValues.startTable.x + swPx / 2,
+    };
+    return calcAnchors(
+      pathValues,
+      swPx,
+      ewPx,
+      settings.showComments,
+      firstRef,
+      lastRef,
+    );
+  }, [pathValues, isComposite, points, settings.showComments]);
 
   const pathRef = useRef();
   const labelRef = useRef();
@@ -114,6 +152,7 @@ export default function Relationship({ data }) {
   let cardinalityEndY = 0;
   let labelX = 0;
   let labelY = 0;
+  let pathMid = null;
 
   let labelWidth = labelRef.current?.getBBox().width ?? 0;
   let labelHeight = labelRef.current?.getBBox().height ?? 0;
@@ -131,6 +170,7 @@ export default function Relationship({ data }) {
     const pathLength = pathRef.current.getTotalLength();
 
     const labelPoint = pathRef.current.getPointAtLength(pathLength / 2);
+    pathMid = { x: labelPoint.x, y: labelPoint.y };
     labelX = labelPoint.x - (labelWidth ?? 0) / 2;
     labelY = labelPoint.y + (labelHeight ?? 0) / 2;
 
@@ -143,6 +183,20 @@ export default function Relationship({ data }) {
     cardinalityEndX = point2.x;
     cardinalityEndY = point2.y;
   }
+
+  const isSelected =
+    selectedElement.element === ObjectType.RELATIONSHIP &&
+    selectedElement.id === data.id;
+
+  const select = () => {
+    setBulkSelectedElements([]);
+    setSelectedElement((prev) => ({
+      ...prev,
+      element: ObjectType.RELATIONSHIP,
+      id: data.id,
+      open: false,
+    }));
+  };
 
   const edit = () => {
     if (!layout.sidebar) {
@@ -169,21 +223,36 @@ export default function Relationship({ data }) {
 
   if (!pathValues) return null;
 
+  const dPath = composite
+    ? composite.path
+    : hasWaypoints
+      ? calcWaypointPath(waypointGeom.start, points, waypointGeom.end)
+      : calcPath(
+          pathValues,
+          pathValues.startTableWidth,
+          1,
+          settings.showComments,
+          pathValues.endTableWidth,
+        );
+
+  const vertices = hasWaypoints
+    ? [waypointGeom.start, ...points, waypointGeom.end]
+    : null;
+
+  const showEditHandles = isSelected && !composite && !layout.readOnly;
+
   return (
     <>
-      <g className="select-none group" onDoubleClick={edit}>
+      <g
+        className="select-none group"
+        onDoubleClick={edit}
+        onPointerDown={(e) => {
+          if (e.isPrimary && e.button === 0) select();
+        }}
+      >
         {/* invisible wider path for better hover ux */}
         <path
-          d={
-            composite
-              ? composite.path
-              : calcPath(
-                  pathValues,
-                  settings.tableWidth,
-                  1,
-                  settings.showComments,
-                )
-          }
+          d={dPath}
           fill="none"
           stroke="transparent"
           strokeWidth={12}
@@ -191,19 +260,12 @@ export default function Relationship({ data }) {
         />
         <path
           ref={pathRef}
-          d={
-            composite
-              ? composite.path
-              : calcPath(
-                  pathValues,
-                  settings.tableWidth,
-                  1,
-                  settings.showComments,
-                )
-          }
+          d={dPath}
           className="relationship-path"
           fill="none"
           cursor="pointer"
+          stroke={isSelected ? "#5891db" : undefined}
+          strokeWidth={isSelected ? 2.5 : undefined}
         />
         {settings.showRelationshipLabels && (
           <text
@@ -231,6 +293,75 @@ export default function Relationship({ data }) {
               text={cardinalityEnd}
             />
           </>
+        )}
+        {showEditHandles && (
+          <g>
+            {/* existing bend points: drag to move, double-click to remove */}
+            {points.map((p, i) => (
+              <circle
+                key={`wp-${i}`}
+                cx={p.x}
+                cy={p.y}
+                r={6}
+                fill="#5891db"
+                stroke="white"
+                strokeWidth={1.5}
+                style={{ cursor: "move" }}
+                onPointerDown={(e) => {
+                  if (!e.isPrimary || e.button !== 0) return;
+                  e.stopPropagation();
+                  onWaypointDown?.(data.id, i);
+                }}
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  onWaypointRemove?.(data.id, i);
+                }}
+              >
+                <title>{t("waypoint_hint")}</title>
+              </circle>
+            ))}
+            {/* add-bend handles at each segment midpoint */}
+            {hasWaypoints
+              ? vertices.slice(0, -1).map((v, i) => {
+                  const mid = {
+                    x: (v.x + vertices[i + 1].x) / 2,
+                    y: (v.y + vertices[i + 1].y) / 2,
+                  };
+                  return (
+                    <circle
+                      key={`add-${i}`}
+                      cx={mid.x}
+                      cy={mid.y}
+                      r={4}
+                      fill="white"
+                      stroke="#5891db"
+                      strokeWidth={1.5}
+                      style={{ cursor: "copy" }}
+                      onPointerDown={(e) => {
+                        if (!e.isPrimary || e.button !== 0) return;
+                        e.stopPropagation();
+                        onSegmentDown?.(data.id, i, mid);
+                      }}
+                    />
+                  );
+                })
+              : pathMid && (
+                  <circle
+                    cx={pathMid.x}
+                    cy={pathMid.y}
+                    r={4}
+                    fill="white"
+                    stroke="#5891db"
+                    strokeWidth={1.5}
+                    style={{ cursor: "copy" }}
+                    onPointerDown={(e) => {
+                      if (!e.isPrimary || e.button !== 0) return;
+                      e.stopPropagation();
+                      onSegmentDown?.(data.id, 0, pathMid);
+                    }}
+                  />
+                )}
+          </g>
         )}
       </g>
       <SideSheet

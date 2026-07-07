@@ -613,15 +613,16 @@ export default function ControlPanel({
     };
 
     tables.forEach((table) => {
+      const tableWidth = table.width ?? settings.tableWidth;
       minMaxXY.minX = Math.min(minMaxXY.minX, table.x);
       minMaxXY.minY = Math.min(minMaxXY.minY, table.y);
-      minMaxXY.maxX = Math.max(minMaxXY.maxX, table.x + settings.tableWidth);
+      minMaxXY.maxX = Math.max(minMaxXY.maxX, table.x + tableWidth);
       minMaxXY.maxY = Math.max(
         minMaxXY.maxY,
         table.y +
           getTableHeight(
             table,
-            settings.tableWidth,
+            tableWidth,
             settings.showComments,
             relationships,
           ),
@@ -726,6 +727,30 @@ export default function ControlPanel({
       case ObjectType.TABLE:
         deleteTable(selectedElement.id);
         break;
+      case ObjectType.RELATIONSHIP: {
+        const rel = relationships.find((r) => r.id === selectedElement.id);
+        // for relationships created by the canvas tool, also remove the
+        // foreign-key column it added. deleteField cascades the relationship
+        // removal (and keeps both in a single undo step).
+        if (rel?.autoCreatedFk) {
+          const startTable = tables.find((tb) => tb.id === rel.startTableId);
+          const fkField = startTable?.fields.find(
+            (f) => f.id === rel.startFieldId,
+          );
+          if (fkField) {
+            deleteField(fkField, rel.startTableId);
+            setSelectedElement((prev) => ({
+              ...prev,
+              element: ObjectType.NONE,
+              id: -1,
+              open: false,
+            }));
+            break;
+          }
+        }
+        deleteRelationship(selectedElement.id);
+        break;
+      }
       case ObjectType.NOTE:
         deleteNote(selectedElement.id);
         break;

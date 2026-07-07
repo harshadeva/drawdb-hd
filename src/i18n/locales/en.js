@@ -158,6 +158,8 @@ const en = {
     rel_pick_parent: "Click the parent table (holds the primary key)",
     rel_pick_child: "Now click the child table (gets the foreign key)",
     parent_needs_pk: "The parent table needs at least one field",
+    resize: "Drag to resize table width",
+    waypoint_hint: "Drag to move, double-click to remove",
     content: "Content",
     types_info:
       "This feature is meant for object-relational DBMSs like PostgreSQL.\nIf used for MySQL or MariaDB a JSON type will be generated with the corresponding json validation check.\nIf used for SQLite it will be translated to a BLOB.\nIf used for MSSQL a type alias to the first field will be generated.",
