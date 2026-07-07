@@ -54,6 +54,8 @@ export default function Table({
   setHoveredTable,
   handleGripField,
   setLinkingLine,
+  relationshipMode = null,
+  isRelationshipSource = false,
 }) {
   const [hoveredField, setHoveredField] = useState(null);
   const { layout } = useLayout();
@@ -244,7 +246,9 @@ export default function Table({
         y={tableData.y}
         width={settings.tableWidth}
         height={height}
-        className="group drop-shadow-lg rounded-md cursor-move"
+        className={`group drop-shadow-lg rounded-md ${
+          relationshipMode ? "cursor-crosshair" : "cursor-move"
+        }`}
         onPointerDown={onPointerDown}
       >
         <div
@@ -254,7 +258,13 @@ export default function Table({
                  settings.mode === "light"
                    ? "bg-zinc-100 text-zinc-800"
                    : "bg-zinc-800 text-zinc-200"
-               } ${isSelected ? "border-solid border-blue-500" : borderColor}`}
+               } ${
+                 isRelationshipSource
+                   ? "border-solid border-green-500"
+                   : isSelected
+                     ? "border-solid border-blue-500"
+                     : borderColor
+               }`}
           style={{ direction: "ltr" }}
         >
           <div

@@ -15,6 +15,7 @@ import Table from "./Table";
 import Area from "./Area";
 import Relationship from "./Relationship";
 import Note from "./Note";
+import RelationshipToolbar from "./RelationshipToolbar";
 import {
   useCanvas,
   useSettings,
@@ -66,6 +67,10 @@ export default function Canvas() {
     grabOffset: { x: 0, y: 0 },
   };
   const [dragging, setDragging] = useState(notDragging);
+  // relationship creation tool: selected cardinality (null = tool off)
+  // and the first (parent) table that was clicked
+  const [relationshipMode, setRelationshipMode] = useState(null);
+  const [pendingRelTable, setPendingRelTable] = useState(null);
   const [linking, setLinking] = useState(false);
   const [linkingLine, setLinkingLine] = useState({
     startTableId: -1,
@@ -458,6 +463,17 @@ export default function Canvas() {
     const isMouseMiddleButton = e.button === 1;
     const isMouseRightButton = e.button === 2;
 
+    // Relationship tool: left-clicking tables picks the two endpoints
+    // instead of selecting/dragging them.
+    if (relationshipMode && isMouseLeftButton) {
+      if (elementPointerDown && elementPointerDown.type === ObjectType.TABLE) {
+        handleRelationshipTableClick(elementPointerDown.element);
+      } else {
+        setPendingRelTable(null);
+      }
+      return;
+    }
+
     if (isMouseLeftButton) {
       setBulkSelectRect({
         x1: pointer.spaces.diagram.x,
@@ -675,6 +691,106 @@ export default function Canvas() {
     addRelationship(newRelationship);
   };
 
+  const selectRelationshipMode = (value) => {
+    setRelationshipMode(value);
+    setPendingRelTable(null);
+  };
+
+  // The toolbar cardinality is read as parent -> child (parent is clicked
+  // first). A stored relationship is start -> end, and here start = child (FK)
+  // and end = parent (PK), so the value must be inverted. This matches what
+  // dragging from a child FK field to a parent PK field already produces.
+  const toStoredCardinality = (toolbarValue) => {
+    if (toolbarValue === Cardinality.ONE_TO_MANY) return Cardinality.MANY_TO_ONE;
+    if (toolbarValue === Cardinality.MANY_TO_ONE) return Cardinality.ONE_TO_MANY;
+    return Cardinality.ONE_TO_ONE;
+  };
+
+  // Creates a relationship (and the foreign key column) from two tables.
+  // parent = the referenced/primary-key side (clicked first),
+  // child = the side that receives the new foreign key (clicked second).
+  const createRelationshipFromTables = (parent, child, toolbarCardinality) => {
+    if (layout.readOnly) return;
+
+    const parentPk = parent.fields.find((f) => f.primary) ?? parent.fields[0];
+    if (!parentPk) {
+      Toast.info(t("parent_needs_pk"));
+      return;
+    }
+
+    const cardinality = toStoredCardinality(toolbarCardinality);
+
+    const baseName = `${parent.name}_${parentPk.name}`;
+    const existingNames = new Set(child.fields.map((f) => f.name));
+    let fieldName = baseName;
+    let suffix = 1;
+    while (existingNames.has(fieldName)) fieldName = `${baseName}_${suffix++}`;
+
+    const newField = {
+      name: fieldName,
+      type: parentPk.type,
+      size: parentPk.size ?? "",
+      default: "",
+      check: "",
+      primary: false,
+      unique: toolbarCardinality === Cardinality.ONE_TO_ONE,
+      unsigned: parentPk.unsigned ?? false,
+      notNull: false,
+      increment: false,
+      comment: "",
+      id: nanoid(),
+    };
+
+    const newRelationship = {
+      startTableId: child.id,
+      startFieldId: newField.id,
+      endTableId: parent.id,
+      endFieldId: parentPk.id,
+      cardinality,
+      fields: [{ startFieldId: newField.id, endFieldId: parentPk.id }],
+      updateConstraint: Constraint.NONE,
+      deleteConstraint: Constraint.NONE,
+      name: `fk_${child.name}_${fieldName}_${parent.name}`,
+      id: nanoid(),
+    };
+
+    updateTable(child.id, { fields: [...child.fields, newField] });
+    addRelationship(
+      { relationship: newRelationship, index: relationships.length },
+      false,
+    );
+    setUndoStack((prev) => [
+      ...prev,
+      {
+        action: Action.ADD,
+        element: ObjectType.RELATIONSHIP,
+        data: { relationship: newRelationship, index: relationships.length },
+        createdField: { tableId: child.id, field: newField },
+        message: t("add_relationship"),
+      },
+    ]);
+    setRedoStack([]);
+  };
+
+  const handleRelationshipTableClick = (table) => {
+    if (!pendingRelTable) {
+      setPendingRelTable(table.id);
+      return;
+    }
+    if (pendingRelTable === table.id) return;
+
+    const parent = tables.find((tb) => tb.id === pendingRelTable);
+    if (parent) createRelationshipFromTables(parent, table, relationshipMode);
+    setPendingRelTable(null);
+  };
+
+  useEventListener("keydown", (e) => {
+    if (e.key === "Escape" && relationshipMode) {
+      setRelationshipMode(null);
+      setPendingRelTable(null);
+    }
+  });
+
   useEventListener(
     "wheel",
     (e) => {
@@ -720,11 +836,27 @@ export default function Canvas() {
   );
 
   return (
-    <div className="grow h-full touch-none" id="canvas">
+    <div className="grow h-full touch-none relative" id="canvas">
+      {!layout.readOnly && (
+        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 items-start pointer-events-none">
+          <div className="pointer-events-auto">
+            <RelationshipToolbar
+              mode={relationshipMode}
+              onSelect={selectRelationshipMode}
+              disabled={layout.readOnly}
+            />
+          </div>
+          {relationshipMode && (
+            <div className="px-3 py-1.5 rounded-md text-sm popover-theme shadow-md">
+              {pendingRelTable ? t("rel_pick_child") : t("rel_pick_parent")}
+            </div>
+          )}
+        </div>
+      )}
       <div
         className="w-full h-full"
         style={{
-          cursor: pointer.style,
+          cursor: relationshipMode ? "crosshair" : pointer.style,
           backgroundColor: settings.mode === "dark" ? darkBgTheme : "white",
         }}
       >
@@ -797,6 +929,8 @@ export default function Canvas() {
               setHoveredTable={setHoveredTable}
               handleGripField={handleGripField}
               setLinkingLine={setLinkingLine}
+              relationshipMode={relationshipMode}
+              isRelationshipSource={pendingRelTable === table.id}
               onPointerDown={() => {
                 elementPointerDown = {
                   element: table,

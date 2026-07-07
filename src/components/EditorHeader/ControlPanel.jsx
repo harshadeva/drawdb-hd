@@ -176,6 +176,16 @@ export default function ControlPanel({
         deleteNote(notes[notes.length - 1].id, false);
       } else if (a.element === ObjectType.RELATIONSHIP) {
         deleteRelationship(a.data.relationship.id, false);
+        if (a.createdField) {
+          const table = tables.find((t) => t.id === a.createdField.tableId);
+          if (table) {
+            updateTable(a.createdField.tableId, {
+              fields: table.fields.filter(
+                (f) => f.id !== a.createdField.field.id,
+              ),
+            });
+          }
+        }
       } else if (a.element === ObjectType.TYPE) {
         deleteType(a.data.type.id, false);
       } else if (a.element === ObjectType.ENUM) {
@@ -375,6 +385,14 @@ export default function ControlPanel({
       } else if (a.element === ObjectType.NOTE) {
         addNote(null, false);
       } else if (a.element === ObjectType.RELATIONSHIP) {
+        if (a.createdField) {
+          const table = tables.find((t) => t.id === a.createdField.tableId);
+          if (table) {
+            updateTable(a.createdField.tableId, {
+              fields: [...table.fields, a.createdField.field],
+            });
+          }
+        }
         addRelationship(a.data, false);
       } else if (a.element === ObjectType.TYPE) {
         addType(a.data, false);

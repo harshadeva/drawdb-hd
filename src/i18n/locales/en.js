@@ -154,6 +154,10 @@ const en = {
     one_to_one: "One to one",
     one_to_many: "One to many",
     many_to_one: "Many to one",
+    relationship_tool: "Create relationship",
+    rel_pick_parent: "Click the parent table (holds the primary key)",
+    rel_pick_child: "Now click the child table (gets the foreign key)",
+    parent_needs_pk: "The parent table needs at least one field",
     content: "Content",
     types_info:
       "This feature is meant for object-relational DBMSs like PostgreSQL.\nIf used for MySQL or MariaDB a JSON type will be generated with the corresponding json validation check.\nIf used for SQLite it will be translated to a BLOB.\nIf used for MSSQL a type alias to the first field will be generated.",
