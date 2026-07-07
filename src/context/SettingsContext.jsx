@@ -12,7 +12,7 @@ const defaultSettings = {
   mode: "light",
   autosave: true,
   showCardinality: true,
-  showRelationshipLabels: true,
+  showRelationshipLabels: false,
   tableWidth: tableWidth,
   showDebugCoordinates: false,
   showComments: false,
