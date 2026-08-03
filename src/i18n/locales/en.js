@@ -95,6 +95,7 @@ const en = {
     zoom: "Zoom",
     add_table: "Add table",
     add_area: "Add area",
+    add_boundary: "Add boundary",
     add_note: "Add note",
     add_type: "Add type",
     tables: "Tables",

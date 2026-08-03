@@ -25,6 +25,11 @@ export const tableColorStripHeight = 7;
 export const pngExportPixelRatio = 4;
 export const minAreaSize = 120;
 
+export const AreaSubtype = {
+  AREA: "area",
+  BOUNDARY: "boundary",
+};
+
 export const Cardinality = {
   ONE_TO_ONE: "one_to_one",
   ONE_TO_MANY: "one_to_many",

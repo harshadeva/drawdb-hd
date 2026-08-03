@@ -13,7 +13,13 @@ import {
   IconLock,
   IconUnlock,
 } from "@douyinfe/semi-icons";
-import { Tab, Action, ObjectType, State } from "../../data/constants";
+import {
+  Tab,
+  Action,
+  ObjectType,
+  State,
+  AreaSubtype,
+} from "../../data/constants";
 import {
   useLayout,
   useSettings,
@@ -150,6 +156,8 @@ export default function Area({
     );
   }, [selectedElement, data, bulkSelectedElements]);
 
+  const isBoundary = data.subtype === AreaSubtype.BOUNDARY;
+
   return (
     <g ref={ref}>
       <foreignObject
@@ -165,10 +173,18 @@ export default function Area({
             isHovered
               ? "border-dashed border-blue-500"
               : isSelected
-                ? "border-blue-500 opacity-100"
-                : "border-slate-400 opacity-100"
+                ? `${isBoundary ? "border-dashed" : ""} border-blue-500 opacity-100`
+                : isBoundary
+                  ? "border-dashed opacity-100"
+                  : "border-slate-400 opacity-100"
           }`}
-          style={{ backgroundColor: `${data.color}66` }}
+          style={{
+            backgroundColor: isBoundary ? "transparent" : `${data.color}66`,
+            borderColor:
+              isBoundary && !isHovered && !isSelected
+                ? data.color
+                : undefined,
+          }}
           onDoubleClick={edit}
         >
           <div className="flex justify-between gap-1 w-full">

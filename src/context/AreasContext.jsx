@@ -1,7 +1,12 @@
 import { Toast } from "@douyinfe/semi-ui";
 import { createContext, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Action, ObjectType, defaultBlue } from "../data/constants";
+import {
+  Action,
+  ObjectType,
+  AreaSubtype,
+  defaultBlue,
+} from "../data/constants";
 import { useSelect, useTransform, useUndoRedo, useCollab } from "../hooks";
 
 export const AreasContext = createContext(null);
@@ -15,7 +20,7 @@ export default function AreasContextProvider({ children }) {
   const { emitDelta, isApplyingRemoteRef } = useCollab();
   const shouldEmit = () => !isApplyingRemoteRef?.current;
 
-  const addArea = (data, addToHistory = true) => {
+  const addArea = (data, addToHistory = true, subtype = AreaSubtype.AREA) => {
     let created = data;
     if (data) {
       setAreas((prev) => {
@@ -26,15 +31,18 @@ export default function AreasContextProvider({ children }) {
     } else {
       const width = 200;
       const height = 200;
+      const namePrefix =
+        subtype === AreaSubtype.BOUNDARY ? "boundary" : "area";
       created = {
         id: areas.length,
-        name: `area_${areas.length}`,
+        name: `${namePrefix}_${areas.length}`,
         x: transform.pan.x - width / 2,
         y: transform.pan.y - height / 2,
         width,
         height,
         color: defaultBlue,
         locked: false,
+        subtype,
       };
       setAreas((prev) => [...prev, { ...created, id: prev.length }]);
     }
@@ -44,7 +52,11 @@ export default function AreasContextProvider({ children }) {
         {
           action: Action.ADD,
           element: ObjectType.AREA,
-          message: t("add_area"),
+          message: t(
+            created?.subtype === AreaSubtype.BOUNDARY
+              ? "add_boundary"
+              : "add_area",
+          ),
         },
       ]);
       setRedoStack([]);

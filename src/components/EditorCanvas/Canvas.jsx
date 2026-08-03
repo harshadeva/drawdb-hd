@@ -1077,22 +1077,23 @@ export default function Canvas() {
 
   return (
     <div className="grow h-full touch-none relative" id="canvas">
-      {!layout.readOnly && (
-        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 items-start pointer-events-none">
-          <div className="pointer-events-auto">
-            <RelationshipToolbar
-              mode={relationshipMode}
-              onSelect={selectRelationshipMode}
-              disabled={layout.readOnly}
-            />
-          </div>
-          {relationshipMode && (
-            <div className="px-3 py-1.5 rounded-md text-sm popover-theme shadow-md">
-              {pendingRelTable ? t("rel_pick_child") : t("rel_pick_parent")}
+      {!layout.readOnly &&
+        (layout.header || layout.sidebar || layout.toolbar) && (
+          <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 items-start pointer-events-none">
+            <div className="pointer-events-auto">
+              <RelationshipToolbar
+                mode={relationshipMode}
+                onSelect={selectRelationshipMode}
+                disabled={layout.readOnly}
+              />
             </div>
-          )}
-        </div>
-      )}
+            {relationshipMode && (
+              <div className="px-3 py-1.5 rounded-md text-sm popover-theme shadow-md">
+                {pendingRelTable ? t("rel_pick_child") : t("rel_pick_parent")}
+              </div>
+            )}
+          </div>
+        )}
       <div
         className="w-full h-full"
         style={{

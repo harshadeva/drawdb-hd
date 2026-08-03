@@ -46,6 +46,7 @@ import {
   IMPORT_FROM,
   noteWidth,
   pngExportPixelRatio,
+  AreaSubtype,
 } from "../../data/constants";
 import jsPDF from "jspdf";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -69,7 +70,12 @@ import {
 } from "../../hooks";
 import { enterFullscreen, exitFullscreen } from "../../utils/fullscreen";
 import { dataURItoBlob } from "../../utils/utils";
-import { IconAddArea, IconAddNote, IconAddTable } from "../../icons";
+import {
+  IconAddArea,
+  IconAddBoundary,
+  IconAddNote,
+  IconAddTable,
+} from "../../icons";
 import LayoutDropdown from "./LayoutDropdown";
 import Sidesheet from "./SideSheet/Sidesheet";
 import Modal from "./Modal/Modal";
@@ -1976,6 +1982,15 @@ export default function ControlPanel({
               disabled={layout.readOnly}
             >
               <IconAddArea />
+            </button>
+          </Tooltip>
+          <Tooltip content={t("add_boundary")} position="bottom">
+            <button
+              className="py-1 px-2 hover-2 rounded-sm flex items-center disabled:opacity-50"
+              onClick={() => addArea(null, true, AreaSubtype.BOUNDARY)}
+              disabled={layout.readOnly}
+            >
+              <IconAddBoundary />
             </button>
           </Tooltip>
           <Tooltip content={t("add_note")} position="bottom">
