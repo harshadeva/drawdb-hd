@@ -35,7 +35,7 @@ export default function DiagramContextProvider({ children }) {
     [emitDelta, isApplyingRemoteRef],
   );
 
-  const addTable = (data, addToHistory = true) => {
+  const addTable = (data, addToHistory = true, templateFields) => {
     const id = nanoid();
     const newTable = {
       id,
@@ -43,21 +43,34 @@ export default function DiagramContextProvider({ children }) {
       x: transform.pan.x,
       y: transform.pan.y,
       locked: false,
-      fields: [
-        {
-          name: "id",
-          type: database === DB.GENERIC ? "INT" : "INTEGER",
-          default: "",
-          check: "",
-          primary: true,
-          unique: false,
-          unsigned: true,
-          notNull: true,
-          increment: true,
-          comment: "",
-          id: nanoid(),
-        },
-      ],
+      fields: templateFields
+        ? templateFields.map((field) => ({
+            default: "",
+            check: "",
+            primary: false,
+            unique: false,
+            unsigned: false,
+            notNull: false,
+            increment: false,
+            comment: "",
+            ...field,
+            id: nanoid(),
+          }))
+        : [
+            {
+              name: "id",
+              type: database === DB.GENERIC ? "INT" : "INTEGER",
+              default: "",
+              check: "",
+              primary: true,
+              unique: false,
+              unsigned: true,
+              notNull: true,
+              increment: true,
+              comment: "",
+              id: nanoid(),
+            },
+          ],
       comment: "",
       indices: [],
       uniqueConstraints: [],

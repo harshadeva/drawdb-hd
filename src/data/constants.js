@@ -93,6 +93,7 @@ export const MODAL = {
   LANGUAGE: 10,
   SHARE: 11,
   CONFIG_CUSTOM_TYPES: 12,
+  CONFIG_TABLE_TEMPLATES: 13,
 };
 
 export const STATUS = {

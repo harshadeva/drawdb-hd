@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Action, ObjectType } from "../../../data/constants";
 import { Input, Button, Popover, Select } from "@douyinfe/semi-ui";
 import { IconMore, IconKeyStroked } from "@douyinfe/semi-icons";
@@ -25,6 +25,8 @@ export default function TableField({ data, tid, index, inherited }) {
   const { setUndoStack, setRedoStack } = useUndoRedo();
   const [editField, setEditField] = useState({});
   const table = useMemo(() => tables.find((t) => t.id === tid), [tables, tid]);
+  const typeSelectRef = useRef(null);
+  const [isTypeSelectOpen, setIsTypeSelectOpen] = useState(false);
 
   return (
     <div className="hover-1 my-2 flex gap-2 items-center">
@@ -64,8 +66,18 @@ export default function TableField({ data, tid, index, inherited }) {
         />
       </div>
 
-      <div className="min-w-24 flex-1/3">
+      <div
+        className="min-w-24 flex-1/3"
+        onKeyDownCapture={(e) => {
+          if (!isTypeSelectOpen && (e.code === "Space" || e.key === " ")) {
+            e.preventDefault();
+            typeSelectRef.current?.open();
+          }
+        }}
+      >
         <Select
+          ref={typeSelectRef}
+          onDropdownVisibleChange={setIsTypeSelectOpen}
           className="w-full"
           optionList={[
             ...Object.keys(dbToTypes[database]).map((value) => ({

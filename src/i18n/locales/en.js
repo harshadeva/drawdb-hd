@@ -304,6 +304,17 @@ const en = {
     close: "Close",
     add_custom_type: "Add custom type",
     type_name_required: "Type name is required",
+    configure_table_templates: "Configure table templates",
+    table_templates_description:
+      "Manage the reusable column layouts you've saved from existing tables. Pick one from the \"Add table\" menu to start a new table pre-filled with its columns.",
+    no_table_templates: "You do not have any table templates saved",
+    no_table_templates_text:
+      "Open a table's editor and use \"Save columns as template\" to create one.",
+    template_name_required: "Template name is required",
+    columns: "Columns",
+    save_columns_as_template: "Save columns as template",
+    table_template_saved: "Table template saved",
+    blank_table: "Blank table",
     database: "Database",
     saved: "Saved",
     structure: "Structure",

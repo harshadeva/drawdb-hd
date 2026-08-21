@@ -95,6 +95,8 @@ import { deleteFromCache, STORAGE_KEY } from "../../utils/cache";
 import { useLiveQuery } from "dexie-react-hooks";
 import { DateTime } from "luxon";
 import ConfigureCustomTypes from "./ConfigureCustomTypes";
+import ConfigureTableTemplates from "./ConfigureTableTemplates";
+import { getTableTemplates } from "../../utils/tableTemplates";
 
 export default function ControlPanel({
   title,
@@ -1731,6 +1733,10 @@ export default function ControlPanel({
         function: () => setModal(MODAL.CONFIG_CUSTOM_TYPES),
         disabled: layout.readOnly,
       },
+      configure_table_templates: {
+        function: () => setModal(MODAL.CONFIG_TABLE_TEMPLATES),
+        disabled: layout.readOnly,
+      },
       language: {
         function: () => setModal(MODAL.LANGUAGE),
       },
@@ -1861,10 +1867,15 @@ export default function ControlPanel({
         open={modal === MODAL.CONFIG_CUSTOM_TYPES}
         onClose={() => setModal(MODAL.NONE)}
       />
+      <ConfigureTableTemplates
+        open={modal === MODAL.CONFIG_TABLE_TEMPLATES}
+        onClose={() => setModal(MODAL.NONE)}
+      />
     </>
   );
 
   function toolbar() {
+    const tableTemplates = getTableTemplates();
     return (
       <div
         className="py-1.5 px-3 flex items-center gap-1 rounded-xl select-none overflow-hidden toolbar-theme shadow-lg"
@@ -1966,15 +1977,46 @@ export default function ControlPanel({
             </button>
           </Tooltip>
           <Divider layout="vertical" margin="8px" />
-          <Tooltip content={t("add_table")} position="bottom">
-            <button
-              className="flex items-center py-1 px-2 hover-2 rounded-sm disabled:opacity-50"
-              onClick={() => addTable()}
-              disabled={layout.readOnly}
+          {tableTemplates.length > 0 ? (
+            <Dropdown
+              trigger="click"
+              position="bottom"
+              render={
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={() => addTable()}>
+                    {t("blank_table")}
+                  </Dropdown.Item>
+                  <Dropdown.Divider />
+                  {tableTemplates.map((tpl) => (
+                    <Dropdown.Item
+                      key={tpl.id}
+                      onClick={() => addTable(null, true, tpl.fields)}
+                    >
+                      {tpl.name}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              }
             >
-              <IconAddTable />
-            </button>
-          </Tooltip>
+              <button
+                className="flex items-center py-1 px-2 hover-2 rounded-sm disabled:opacity-50"
+                disabled={layout.readOnly}
+                title={t("add_table")}
+              >
+                <IconAddTable />
+              </button>
+            </Dropdown>
+          ) : (
+            <Tooltip content={t("add_table")} position="bottom">
+              <button
+                className="flex items-center py-1 px-2 hover-2 rounded-sm disabled:opacity-50"
+                onClick={() => addTable()}
+                disabled={layout.readOnly}
+              >
+                <IconAddTable />
+              </button>
+            </Tooltip>
+          )}
           <Tooltip content={t("add_area")} position="bottom">
             <button
               className="py-1 px-2 hover-2 rounded-sm flex items-center disabled:opacity-50"

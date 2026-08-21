@@ -335,7 +335,11 @@ export default function Modal({
     <SemiUIModal
       style={isRtl(i18n.language) ? { direction: "rtl" } : {}}
       title={getModalTitle(modal)}
-      visible={modal !== MODAL.NONE && modal !== MODAL.CONFIG_CUSTOM_TYPES}
+      visible={
+        modal !== MODAL.NONE &&
+        modal !== MODAL.CONFIG_CUSTOM_TYPES &&
+        modal !== MODAL.CONFIG_TABLE_TEMPLATES
+      }
       onOk={getModalOnOk}
       afterClose={() => {
         setExportData(() => ({

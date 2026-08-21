@@ -157,6 +157,35 @@ export const customTypeEntrySchema = {
   required: ["type", "color"],
 };
 
+export const tableTemplateFieldSchema = {
+  type: "object",
+  properties: {
+    name: { type: "string" },
+    type: { type: "string" },
+    default: { type: ["string", "number", "boolean"] },
+    check: { type: "string" },
+    primary: { type: "boolean" },
+    unique: { type: "boolean" },
+    unsigned: { type: "boolean" },
+    notNull: { type: "boolean" },
+    increment: { type: "boolean" },
+    comment: { type: "string" },
+    size: { type: ["string", "number"] },
+    values: { type: "array", items: { type: "string" } },
+  },
+  required: ["name", "type"],
+};
+
+export const tableTemplateSchema = {
+  type: "object",
+  properties: {
+    id: { type: "string", minLength: 1 },
+    name: { type: "string", minLength: 1 },
+    fields: { type: "array", items: { ...tableTemplateFieldSchema } },
+  },
+  required: ["id", "name", "fields"],
+};
+
 export const jsonSchema = {
   type: "object",
   properties: {

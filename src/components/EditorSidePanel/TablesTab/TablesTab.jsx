@@ -1,4 +1,4 @@
-import { Collapse, Button } from "@douyinfe/semi-ui";
+import { Collapse, Button, Dropdown } from "@douyinfe/semi-ui";
 import { IconEyeOpened, IconEyeClosed } from "@douyinfe/semi-icons";
 import { IconPlus } from "@douyinfe/semi-icons";
 import {
@@ -15,6 +15,7 @@ import { SortableList } from "../../SortableList/SortableList";
 import SearchBar from "./SearchBar";
 import Empty from "../Empty";
 import TableInfo from "./TableInfo";
+import { getTableTemplates } from "../../../utils/tableTemplates";
 
 export default function TablesTab() {
   const { tables, addTable, setTables } = useDiagram();
@@ -22,20 +23,48 @@ export default function TablesTab() {
   const { t } = useTranslation();
   const { layout } = useLayout();
   const { setSaveState } = useSaveState();
+  const templates = getTableTemplates();
 
   return (
     <>
       <div className="flex gap-2">
         <SearchBar tables={tables} />
         <div>
-          <Button
-            block
-            icon={<IconPlus />}
-            onClick={() => addTable()}
-            disabled={layout.readOnly}
-          >
-            {t("add_table")}
-          </Button>
+          {templates.length > 0 ? (
+            <Dropdown
+              trigger="click"
+              position="bottomLeft"
+              render={
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={() => addTable()}>
+                    {t("blank_table")}
+                  </Dropdown.Item>
+                  <Dropdown.Divider />
+                  {templates.map((tpl) => (
+                    <Dropdown.Item
+                      key={tpl.id}
+                      onClick={() => addTable(null, true, tpl.fields)}
+                    >
+                      {tpl.name}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              }
+            >
+              <Button block icon={<IconPlus />} disabled={layout.readOnly}>
+                {t("add_table")}
+              </Button>
+            </Dropdown>
+          ) : (
+            <Button
+              block
+              icon={<IconPlus />}
+              onClick={() => addTable()}
+              disabled={layout.readOnly}
+            >
+              {t("add_table")}
+            </Button>
+          )}
         </div>
       </div>
       {tables.length === 0 ? (

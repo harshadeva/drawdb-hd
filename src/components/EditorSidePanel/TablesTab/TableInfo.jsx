@@ -7,9 +7,15 @@ import {
   Card,
   Select,
   Dropdown,
+  Popover,
+  Toast,
 } from "@douyinfe/semi-ui";
 import ColorPicker from "../ColorPicker";
-import { IconDeleteStroked, IconPlus } from "@douyinfe/semi-icons";
+import {
+  IconDeleteStroked,
+  IconPlus,
+  IconTemplateStroked,
+} from "@douyinfe/semi-icons";
 import {
   useDiagram,
   useLayout,
@@ -23,6 +29,7 @@ import UniqueConstraintDetails from "./UniqueConstraintDetails";
 import { useTranslation } from "react-i18next";
 import { SortableList } from "../../SortableList/SortableList";
 import { nanoid } from "nanoid";
+import { addTableTemplate } from "../../../utils/tableTemplates";
 
 export default function TableInfo({ data }) {
   const { tables, database } = useDiagram();
@@ -37,6 +44,15 @@ export default function TableInfo({ data }) {
   const { setSaveState } = useSaveState();
   const [editField, setEditField] = useState({});
   const initialColorRef = useRef(data.color);
+  const [templateName, setTemplateName] = useState(data.name);
+  const [showTemplatePopover, setShowTemplatePopover] = useState(false);
+
+  const saveAsTemplate = () => {
+    if (!templateName.trim()) return;
+    addTableTemplate(templateName.trim(), data.fields);
+    Toast.success(t("table_template_saved"));
+    setShowTemplatePopover(false);
+  };
 
   const handleColorPick = (color) => {
     setUndoStack((prev) => {
@@ -425,6 +441,36 @@ export default function TableInfo({ data }) {
           >
             {t("add_field")}
           </Button>
+          <Popover
+            visible={showTemplatePopover}
+            onVisibleChange={setShowTemplatePopover}
+            trigger="click"
+            position="top"
+            showArrow
+            content={
+              <div className="popover-theme p-1 w-[240px]">
+                <div className="font-semibold mb-2">
+                  {t("save_columns_as_template")}
+                </div>
+                <Input
+                  value={templateName}
+                  placeholder={t("name")}
+                  onChange={setTemplateName}
+                  onEnterPress={saveAsTemplate}
+                  className="mb-2"
+                />
+                <Button block theme="solid" onClick={saveAsTemplate}>
+                  {t("save")}
+                </Button>
+              </div>
+            }
+          >
+            <Button
+              icon={<IconTemplateStroked />}
+              disabled={layout.readOnly}
+              title={t("save_columns_as_template")}
+            />
+          </Popover>
           <Button
             type="danger"
             disabled={layout.readOnly}
