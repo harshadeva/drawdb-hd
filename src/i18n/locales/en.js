@@ -315,6 +315,8 @@ const en = {
     save_columns_as_template: "Save columns as template",
     table_template_saved: "Table template saved",
     blank_table: "Blank table",
+    template_fk_unresolved:
+      "Table added, but couldn't recreate the foreign key(s) to {{tables}} — no table with that name exists in this diagram.",
     database: "Database",
     saved: "Saved",
     structure: "Structure",

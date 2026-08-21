@@ -172,6 +172,24 @@ export const tableTemplateFieldSchema = {
     comment: { type: "string" },
     size: { type: ["string", "number"] },
     values: { type: "array", items: { type: "string" } },
+    references: {
+      type: "object",
+      properties: {
+        table: { type: "string", minLength: 1 },
+        field: { type: "string" },
+        cardinality: { type: "string" },
+        updateConstraint: { type: "string" },
+        deleteConstraint: { type: "string" },
+        fkGroup: { type: "integer" },
+      },
+      required: [
+        "table",
+        "cardinality",
+        "updateConstraint",
+        "deleteConstraint",
+        "fkGroup",
+      ],
+    },
   },
   required: ["name", "type"],
 };

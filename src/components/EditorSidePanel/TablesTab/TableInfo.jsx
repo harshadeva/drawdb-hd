@@ -29,10 +29,13 @@ import UniqueConstraintDetails from "./UniqueConstraintDetails";
 import { useTranslation } from "react-i18next";
 import { SortableList } from "../../SortableList/SortableList";
 import { nanoid } from "nanoid";
-import { addTableTemplate } from "../../../utils/tableTemplates";
+import {
+  addTableTemplate,
+  buildTemplateFields,
+} from "../../../utils/tableTemplates";
 
 export default function TableInfo({ data }) {
-  const { tables, database } = useDiagram();
+  const { tables, database, relationships } = useDiagram();
   const { t } = useTranslation();
   const [indexActiveKey, setIndexActiveKey] = useState("");
   const [uniqueActiveKey, setUniqueActiveKey] = useState("");
@@ -49,7 +52,12 @@ export default function TableInfo({ data }) {
 
   const saveAsTemplate = () => {
     if (!templateName.trim()) return;
-    addTableTemplate(templateName.trim(), data.fields);
+    const fieldsWithReferences = buildTemplateFields(
+      data,
+      tables,
+      relationships,
+    );
+    addTableTemplate(templateName.trim(), fieldsWithReferences);
     Toast.success(t("table_template_saved"));
     setShowTemplatePopover(false);
   };

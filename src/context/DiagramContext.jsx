@@ -37,6 +37,28 @@ export default function DiagramContextProvider({ children }) {
 
   const addTable = (data, addToHistory = true, templateFields) => {
     const id = nanoid();
+    const pendingReferences = [];
+
+    const buildTemplateField = (field) => {
+      const { references, ...rest } = field;
+      const fieldId = nanoid();
+      if (references) {
+        pendingReferences.push({ fieldId, references });
+      }
+      return {
+        default: "",
+        check: "",
+        primary: false,
+        unique: false,
+        unsigned: false,
+        notNull: false,
+        increment: false,
+        comment: "",
+        ...rest,
+        id: fieldId,
+      };
+    };
+
     const newTable = {
       id,
       name: `table_${id}`,
@@ -44,18 +66,7 @@ export default function DiagramContextProvider({ children }) {
       y: transform.pan.y,
       locked: false,
       fields: templateFields
-        ? templateFields.map((field) => ({
-            default: "",
-            check: "",
-            primary: false,
-            unique: false,
-            unsigned: false,
-            notNull: false,
-            increment: false,
-            comment: "",
-            ...field,
-            id: nanoid(),
-          }))
+        ? templateFields.map(buildTemplateField)
         : [
             {
               name: "id",
@@ -106,6 +117,67 @@ export default function DiagramContextProvider({ children }) {
         entityId: created.id,
         data: [created],
       });
+    }
+
+    if (pendingReferences.length > 0) {
+      const groups = new Map();
+      pendingReferences.forEach(({ fieldId, references }) => {
+        const key = `${references.table}::${references.fkGroup}`;
+        if (!groups.has(key)) {
+          groups.set(key, { ...references, pairs: [] });
+        }
+        groups.get(key).pairs.push({
+          startFieldId: fieldId,
+          refFieldName: references.field,
+        });
+      });
+
+      const unresolvedTables = new Set();
+      groups.forEach((group) => {
+        const endTable = tables.find((table) => table.name === group.table);
+        if (!endTable) {
+          unresolvedTables.add(group.table);
+          return;
+        }
+        const fieldPairs = group.pairs
+          .map(({ startFieldId, refFieldName }) => {
+            const endField =
+              (refFieldName &&
+                endTable.fields.find((f) => f.name === refFieldName)) ||
+              endTable.fields.find((f) => f.primary) ||
+              endTable.fields[0];
+            return endField
+              ? { startFieldId, endFieldId: endField.id }
+              : null;
+          })
+          .filter(Boolean);
+
+        if (fieldPairs.length === 0) {
+          unresolvedTables.add(group.table);
+          return;
+        }
+
+        addRelationship({
+          id: nanoid(),
+          name: `fk_${newTable.name}_${endTable.name}`,
+          startTableId: id,
+          startFieldId: fieldPairs[0].startFieldId,
+          endTableId: endTable.id,
+          endFieldId: fieldPairs[0].endFieldId,
+          cardinality: group.cardinality,
+          fields: fieldPairs,
+          updateConstraint: group.updateConstraint,
+          deleteConstraint: group.deleteConstraint,
+        });
+      });
+
+      if (unresolvedTables.size > 0) {
+        Toast.warning(
+          t("template_fk_unresolved", {
+            tables: Array.from(unresolvedTables).join(", "),
+          }),
+        );
+      }
     }
   };
 
