@@ -29,6 +29,7 @@ function storedToArray(stored) {
       arr.push({
         type: name,
         color: entry.color,
+        colorId: entry.colorId ?? null,
         database: db,
         _originalName: name,
       });
@@ -43,7 +44,11 @@ function arrayToStored(arr) {
     const db = item.database;
     const name = item.type.toUpperCase();
     if (!result[db]) result[db] = {};
-    result[db][name] = { type: name, color: item.color };
+    result[db][name] = {
+      type: name,
+      color: item.color,
+      colorId: item.colorId ?? null,
+    };
   }
   return result;
 }
@@ -60,6 +65,7 @@ export default function ConfigureCustomTypes({ open, onClose }) {
       {
         type: "",
         color: "#ccc",
+        colorId: null,
         database: filterDb || database || DB.MYSQL,
       },
       ...prev,

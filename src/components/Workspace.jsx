@@ -37,6 +37,10 @@ import { isRtl } from "../i18n/utils/rtl";
 import { useMatch, useParams, useSearchParams } from "react-router-dom";
 import { get, SHARE_FILENAME } from "../api/gists";
 import { mergeCustomTypes } from "../utils/customTypes";
+import {
+  getUsedColorTemplates,
+  mergeColorTemplates,
+} from "../utils/colorTemplates";
 
 export const IdContext = createContext({
   gistId: "",
@@ -113,21 +117,25 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
   };
 
   const buildCloudPayload = useCallback(
-    (targetId) => ({
-      diagramId: targetId,
-      database,
-      name: title,
-      gistId: gistId ?? "",
-      lastModified: new Date(),
-      tables,
-      references: relationships,
-      notes,
-      areas,
-      pan: transform.pan,
-      zoom: transform.zoom,
-      ...(databases[database].hasEnums && { enums }),
-      ...(databases[database].hasTypes && { types }),
-    }),
+    (targetId) => {
+      const colorTemplates = getUsedColorTemplates({ tables, areas, notes });
+      return {
+        diagramId: targetId,
+        database,
+        name: title,
+        gistId: gistId ?? "",
+        lastModified: new Date(),
+        tables,
+        references: relationships,
+        notes,
+        areas,
+        pan: transform.pan,
+        zoom: transform.zoom,
+        ...(databases[database].hasEnums && { enums }),
+        ...(databases[database].hasTypes && { types }),
+        ...(colorTemplates.length > 0 && { colorTemplates }),
+      };
+    },
     [
       database,
       title,
@@ -191,6 +199,9 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
           loadedFromGistId: loadedFromGistId,
           ...(databases[database].hasEnums && { enums: enums }),
           ...(databases[database].hasTypes && { types: types }),
+          ...(getUsedColorTemplates({ tables, areas, notes }).length > 0 && {
+            colorTemplates: getUsedColorTemplates({ tables, areas, notes }),
+          }),
         })
         .then(() => {
           navigate(`/editor/diagrams/${diagramId}`, { replace: true });
@@ -215,6 +226,9 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
           loadedFromGistId: loadedFromGistId,
           ...(databases[database].hasEnums && { enums: enums }),
           ...(databases[database].hasTypes && { types: types }),
+          ...(getUsedColorTemplates({ tables, areas, notes }).length > 0 && {
+            colorTemplates: getUsedColorTemplates({ tables, areas, notes }),
+          }),
         })
         .then(() => {
           setSaveState(State.SAVED);
@@ -306,6 +320,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
       setTransform({ pan: diagram.pan, zoom: diagram.zoom });
       setTypes(diagram.types ?? []);
       setEnums(diagram.enums ?? []);
+      if (diagram.colorTemplates) mergeColorTemplates(diagram.colorTemplates);
     };
 
     const resetEditorState = () => {
@@ -378,6 +393,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
       setRedoStack([]);
       setTypes(template.types ?? []);
       setEnums(template.enums ?? []);
+      if (template.colorTemplates) mergeColorTemplates(template.colorTemplates);
     };
 
     const loadFromGist = async (shareId, diagramId = null) => {
@@ -399,6 +415,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
         setTypes(parsed.types ?? []);
         setEnums(parsed.enums ?? []);
         if (parsed.customTypes) mergeCustomTypes(parsed.customTypes);
+        if (parsed.colorTemplates) mergeColorTemplates(parsed.colorTemplates);
         if (diagramId) {
           navigate(`/editor/diagrams/${diagramId}`, { replace: true });
         }

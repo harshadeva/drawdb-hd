@@ -94,6 +94,7 @@ export const MODAL = {
   SHARE: 11,
   CONFIG_CUSTOM_TYPES: 12,
   CONFIG_TABLE_TEMPLATES: 13,
+  CONFIG_COLOR_TEMPLATES: 14,
 };
 
 export const STATUS = {

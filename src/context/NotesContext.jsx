@@ -38,6 +38,7 @@ export default function NotesContextProvider({ children }) {
         content: "",
         locked: false,
         color: defaultNoteTheme,
+        colorId: null,
         height,
         width: noteWidth,
       };

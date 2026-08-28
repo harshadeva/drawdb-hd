@@ -34,6 +34,7 @@ import Rename from "./Rename";
 import SetTableWidth from "./SetTableWidth";
 import Share from "./Share";
 import { mergeCustomTypes } from "../../../utils/customTypes";
+import { mergeColorTemplates } from "../../../utils/colorTemplates";
 
 const extensionToLanguage = {
   md: "markdown",
@@ -101,6 +102,9 @@ export default function Modal({
     }
     if (importData.customTypes) {
       mergeCustomTypes(importData.customTypes);
+    }
+    if (importData.colorTemplates) {
+      mergeColorTemplates(importData.colorTemplates);
     }
   };
 

@@ -41,6 +41,7 @@ export default function AreasContextProvider({ children }) {
         width,
         height,
         color: defaultBlue,
+        colorId: null,
         locked: false,
         subtype,
       };

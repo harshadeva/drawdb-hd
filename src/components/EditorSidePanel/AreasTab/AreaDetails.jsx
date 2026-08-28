@@ -13,10 +13,13 @@ export default function AreaInfo({ data, i }) {
   const { setUndoStack, setRedoStack } = useUndoRedo();
   const [editField, setEditField] = useState({});
   const initialColorRef = useRef(data.color);
+  const initialColorIdRef = useRef(data.colorId ?? null);
 
-  const handleColorPick = (color) => {
+  const handleColorPick = (color, colorId = null) => {
+    updateArea(i, { color, colorId });
     setUndoStack((prev) => {
       let undoColor = initialColorRef.current;
+      let undoColorId = initialColorIdRef.current;
       const lastColorChange = prev.findLast(
         (e) =>
           e.element === ObjectType.AREA &&
@@ -26,9 +29,10 @@ export default function AreaInfo({ data, i }) {
       );
       if (lastColorChange) {
         undoColor = lastColorChange.redo.color;
+        undoColorId = lastColorChange.redo.colorId ?? null;
       }
 
-      if (color === undoColor) return prev;
+      if (color === undoColor && colorId === undoColorId) return prev;
 
       const newStack = [
         ...prev,
@@ -36,8 +40,8 @@ export default function AreaInfo({ data, i }) {
           action: Action.EDIT,
           element: ObjectType.AREA,
           aid: i,
-          undo: { color: undoColor },
-          redo: { color: color },
+          undo: { color: undoColor, colorId: undoColorId },
+          redo: { color: color, colorId: colorId },
           message: t("edit_area", {
             areaName: data.name,
             extra: "[color]",
@@ -77,11 +81,11 @@ export default function AreaInfo({ data, i }) {
         }}
       />
       <ColorPicker
-        usePopover={true}
         value={data.color}
+        colorId={data.colorId ?? null}
         readOnly={layout.readOnly}
-        onChange={(color) => updateArea(i, { color })}
-        onColorPick={(color) => handleColorPick(color)}
+        onChange={(color) => updateArea(i, { color, colorId: null })}
+        onColorPick={(color, colorId) => handleColorPick(color, colorId)}
       />
       <Button
         type="danger"

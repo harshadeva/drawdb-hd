@@ -23,9 +23,16 @@ export default function TypeRow({ type, index, onChange, onDelete }) {
       </td>
       <td className="py-2 pr-3 align-middle w-[1%] whitespace-nowrap">
         <ColorPicker
-          usePopover={true}
           value={type.color}
-          onColorPick={(color) => onChange(index, "color", color)}
+          colorId={type.colorId ?? null}
+          onChange={(color) => {
+            onChange(index, "color", color);
+            onChange(index, "colorId", null);
+          }}
+          onColorPick={(color, colorId) => {
+            onChange(index, "color", color);
+            onChange(index, "colorId", colorId);
+          }}
         />
       </td>
       <td className="py-2 pr-3 align-middle w-[1%] whitespace-nowrap">

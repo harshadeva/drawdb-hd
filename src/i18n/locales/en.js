@@ -317,6 +317,27 @@ const en = {
     blank_table: "Blank table",
     template_fk_unresolved:
       "Table added, but couldn't recreate the foreign key(s) to {{tables}} — no table with that name exists in this diagram.",
+    template_field_invalid:
+      "Every column in \"{{templateName}}\" needs a name and a type",
+    template_fk_table_required:
+      "The foreign key in \"{{templateName}}\" needs a referenced table name",
+    configure_color_templates: "Configure color templates",
+    color_templates: "Color templates",
+    color_templates_description:
+      "Define named colors once and reuse them from any color picker. Editing a color template updates every table, area, note, and custom type that uses it.",
+    no_color_templates: "You do not have any color templates saved",
+    no_color_templates_text:
+      "Add a color below, give it a name, then pick it from any color picker.",
+    add_color: "Add color",
+    color_name: "Color name",
+    manage_color_templates: "Manage color templates",
+    color_template_name_required: "Color template name is required",
+    color_template_name_duplicate:
+      "A color template named \"{{name}}\" already exists",
+    add_foreign_key: "Add foreign key",
+    remove_foreign_key: "Remove foreign key",
+    referenced_table: "Referenced table",
+    referenced_column_optional: "Referenced column (optional, defaults to PK)",
     database: "Database",
     saved: "Saved",
     structure: "Structure",

@@ -20,7 +20,11 @@ function migrateIfNeeded(parsed) {
       const name = item.type.toUpperCase();
       if (!validDatabases.has(db)) continue;
       if (!result[db]) result[db] = {};
-      result[db][name] = { type: name, color: item.color || "#ccc" };
+      result[db][name] = {
+        type: name,
+        color: item.color || "#ccc",
+        colorId: item.colorId ?? null,
+      };
     }
     return result;
   }
@@ -40,7 +44,11 @@ export function getCustomTypes() {
       for (const [name, entry] of Object.entries(types)) {
         if (!isValidEntry(entry)) continue;
         if (!result[db]) result[db] = {};
-        result[db][name] = { type: entry.type, color: entry.color };
+        result[db][name] = {
+          type: entry.type,
+          color: entry.color,
+          colorId: entry.colorId ?? null,
+        };
       }
     }
     return result;
@@ -58,6 +66,7 @@ export function getCustomTypesForDb(database) {
     result[name] = {
       type: entry.type,
       color: entry.color,
+      colorId: entry.colorId ?? null,
       checkDefault: () => true,
       hasCheck: false,
       isSized: false,
@@ -77,6 +86,7 @@ export function saveCustomTypes(types) {
 const BLOB_FALLBACK = {
   type: "BLOB",
   color: "",
+  colorId: null,
   checkDefault: () => true,
   hasCheck: false,
   isSized: false,
@@ -106,7 +116,11 @@ export function mergeCustomTypes(incoming) {
     for (const [name, entry] of Object.entries(types)) {
       if (!isValidEntry(entry)) continue;
       if (!existing[db][name]) {
-        existing[db][name] = { type: entry.type, color: entry.color };
+        existing[db][name] = {
+          type: entry.type,
+          color: entry.color,
+          colorId: entry.colorId ?? null,
+        };
       }
     }
   }

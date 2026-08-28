@@ -22,6 +22,7 @@ import {
   useSaveState,
   useTransform,
   useSettings,
+  useColorPalette,
 } from "../../hooks";
 import { useTranslation } from "react-i18next";
 import { noteWidth, noteRadius, noteFold } from "../../data/constants";
@@ -37,6 +38,8 @@ export default function Note({ data, onPointerDown }) {
   const { setSaveState } = useSaveState();
   const { updateNote, deleteNote } = useNotes();
   const { setUndoStack, setRedoStack } = useUndoRedo();
+  const { resolve: resolveColor } = useColorPalette();
+  const noteColor = resolveColor(data);
   const { transform } = useTransform();
   const { settings } = useSettings();
   const {
@@ -46,10 +49,13 @@ export default function Note({ data, onPointerDown }) {
     setBulkSelectedElements,
   } = useSelect();
   const initialColorRef = useRef(data.color);
+  const initialColorIdRef = useRef(data.colorId ?? null);
 
-  const handleColorPick = (color) => {
+  const handleColorPick = (color, colorId = null) => {
+    updateNote(data.id, { color, colorId });
     setUndoStack((prev) => {
       let undoColor = initialColorRef.current;
+      let undoColorId = initialColorIdRef.current;
       const lastColorChange = prev.findLast(
         (e) =>
           e.element === ObjectType.NOTE &&
@@ -59,9 +65,10 @@ export default function Note({ data, onPointerDown }) {
       );
       if (lastColorChange) {
         undoColor = lastColorChange.redo.color;
+        undoColorId = lastColorChange.redo.colorId ?? null;
       }
 
-      if (color === undoColor) return prev;
+      if (color === undoColor && colorId === undoColorId) return prev;
 
       const newStack = [
         ...prev,
@@ -69,8 +76,8 @@ export default function Note({ data, onPointerDown }) {
           action: Action.EDIT,
           element: ObjectType.NOTE,
           nid: data.id,
-          undo: { color: undoColor },
-          redo: { color: color },
+          undo: { color: undoColor, colorId: undoColorId },
+          redo: { color: color, colorId: colorId },
           message: t("edit_note", {
             noteTitle: data.title,
             extra: "[color]",
@@ -225,7 +232,7 @@ export default function Note({ data, onPointerDown }) {
         } ${data.y + data.height} A${noteRadius} ${noteRadius} 0 0 1 ${data.x} ${
           data.y + data.height - noteRadius
         } L${data.x} ${data.y + noteFold}`}
-        fill={data.color}
+        fill={noteColor}
         stroke={
           hovered
             ? "rgb(59 130 246)"
@@ -243,7 +250,7 @@ export default function Note({ data, onPointerDown }) {
         } A${noteRadius} ${noteRadius} 0 0 0 ${data.x + noteFold} ${data.y + noteFold - noteRadius} L${
           data.x + noteFold
         } ${data.y} L${data.x} ${data.y + noteFold} Z`}
-        fill={data.color}
+        fill={noteColor}
         stroke={
           hovered
             ? "rgb(59 130 246)"
@@ -485,11 +492,15 @@ export default function Note({ data, onPointerDown }) {
                           }}
                         />
                         <ColorPicker
-                          usePopover={true}
                           readOnly={layout.readOnly}
                           value={data.color}
-                          onChange={(color) => updateNote(data.id, { color })}
-                          onColorPick={(color) => handleColorPick(color)}
+                          colorId={data.colorId ?? null}
+                          onChange={(color) =>
+                            updateNote(data.id, { color, colorId: null })
+                          }
+                          onColorPick={(color, colorId) =>
+                            handleColorPick(color, colorId)
+                          }
                         />
                       </div>
                       <Divider />
@@ -532,7 +543,7 @@ export default function Note({ data, onPointerDown }) {
             }
             onBlur={handleBlur}
             className="w-full resize-none outline-hidden overflow-y-hidden border-none select-none"
-            style={{ backgroundColor: data.color }}
+            style={{ backgroundColor: noteColor }}
           />
         </div>
       </foreignObject>

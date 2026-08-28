@@ -27,6 +27,7 @@ import {
   useSelect,
   useAreas,
   useSaveState,
+  useColorPalette,
 } from "../../hooks";
 import { useTranslation } from "react-i18next";
 import { useHover } from "usehooks-ts";
@@ -43,6 +44,8 @@ export default function Area({
   const { settings } = useSettings();
   const { setSaveState } = useSaveState();
   const { updateArea } = useAreas();
+  const { resolve: resolveColor } = useColorPalette();
+  const areaColor = resolveColor(data);
   const {
     selectedElement,
     setSelectedElement,
@@ -179,10 +182,10 @@ export default function Area({
                   : "border-slate-400 opacity-100"
           }`}
           style={{
-            backgroundColor: isBoundary ? "transparent" : `${data.color}66`,
+            backgroundColor: isBoundary ? "transparent" : `${areaColor}66`,
             borderColor:
               isBoundary && !isHovered && !isSelected
-                ? data.color
+                ? areaColor
                 : undefined,
           }}
           onDoubleClick={edit}
@@ -286,10 +289,13 @@ function EditPopoverContent({ data }) {
   const { t } = useTranslation();
   const { layout } = useLayout();
   const initialColorRef = useRef(data.color);
+  const initialColorIdRef = useRef(data.colorId ?? null);
 
-  const handleColorPick = (color) => {
+  const handleColorPick = (color, colorId = null) => {
+    updateArea(data.id, { color, colorId });
     setUndoStack((prev) => {
       let undoColor = initialColorRef.current;
+      let undoColorId = initialColorIdRef.current;
       const lastColorChange = prev.findLast(
         (e) =>
           e.element === ObjectType.AREA &&
@@ -299,9 +305,10 @@ function EditPopoverContent({ data }) {
       );
       if (lastColorChange) {
         undoColor = lastColorChange.redo.color;
+        undoColorId = lastColorChange.redo.colorId ?? null;
       }
 
-      if (color === undoColor) return prev;
+      if (color === undoColor && colorId === undoColorId) return prev;
 
       const newStack = [
         ...prev,
@@ -309,8 +316,8 @@ function EditPopoverContent({ data }) {
           action: Action.EDIT,
           element: ObjectType.AREA,
           aid: data.id,
-          undo: { color: undoColor },
-          redo: { color: color },
+          undo: { color: undoColor, colorId: undoColorId },
+          redo: { color: color, colorId: colorId },
           message: t("edit_area", {
             areaName: data.name,
             extra: "[color]",
@@ -353,11 +360,11 @@ function EditPopoverContent({ data }) {
           }}
         />
         <ColorPicker
-          usePopover={true}
           readOnly={layout.readOnly}
           value={data.color}
-          onChange={(color) => updateArea(data.id, { color })}
-          onColorPick={(color) => handleColorPick(color)}
+          colorId={data.colorId ?? null}
+          onChange={(color) => updateArea(data.id, { color, colorId: null })}
+          onColorPick={(color, colorId) => handleColorPick(color, colorId)}
         />
       </div>
       <Divider />

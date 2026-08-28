@@ -96,6 +96,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { DateTime } from "luxon";
 import ConfigureCustomTypes from "./ConfigureCustomTypes";
 import ConfigureTableTemplates from "./ConfigureTableTemplates";
+import ConfigureColorTemplates from "./ConfigureColorTemplates";
 import { getTableTemplates } from "../../utils/tableTemplates";
 
 export default function ControlPanel({
@@ -997,6 +998,13 @@ export default function ControlPanel({
       setLayout((p) => ({ ...p, header: true, sidebar: true, toolbar: true }));
   }, [fullscreen, setLayout]);
 
+  useEffect(() => {
+    const openColorTemplates = () => setModal(MODAL.CONFIG_COLOR_TEMPLATES);
+    window.addEventListener("open-color-templates", openColorTemplates);
+    return () =>
+      window.removeEventListener("open-color-templates", openColorTemplates);
+  }, [setModal]);
+
   const menu = {
     file: {
       new: {
@@ -1737,6 +1745,10 @@ export default function ControlPanel({
         function: () => setModal(MODAL.CONFIG_TABLE_TEMPLATES),
         disabled: layout.readOnly,
       },
+      configure_color_templates: {
+        function: () => setModal(MODAL.CONFIG_COLOR_TEMPLATES),
+        disabled: layout.readOnly,
+      },
       language: {
         function: () => setModal(MODAL.LANGUAGE),
       },
@@ -1869,6 +1881,10 @@ export default function ControlPanel({
       />
       <ConfigureTableTemplates
         open={modal === MODAL.CONFIG_TABLE_TEMPLATES}
+        onClose={() => setModal(MODAL.NONE)}
+      />
+      <ConfigureColorTemplates
+        open={modal === MODAL.CONFIG_COLOR_TEMPLATES}
         onClose={() => setModal(MODAL.NONE)}
       />
     </>

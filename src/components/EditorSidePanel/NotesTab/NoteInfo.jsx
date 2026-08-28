@@ -13,10 +13,13 @@ export default function NoteInfo({ data, nid }) {
   const [editField, setEditField] = useState({});
   const { t } = useTranslation();
   const initialColorRef = useRef(data.color);
+  const initialColorIdRef = useRef(data.colorId ?? null);
 
-  const handleColorPick = (color) => {
+  const handleColorPick = (color, colorId = null) => {
+    updateNote(data.id, { color, colorId });
     setUndoStack((prev) => {
       let undoColor = initialColorRef.current;
+      let undoColorId = initialColorIdRef.current;
       const lastColorChange = prev.findLast(
         (e) =>
           e.element === ObjectType.NOTE &&
@@ -26,9 +29,10 @@ export default function NoteInfo({ data, nid }) {
       );
       if (lastColorChange) {
         undoColor = lastColorChange.redo.color;
+        undoColorId = lastColorChange.redo.colorId ?? null;
       }
 
-      if (color === undoColor) return prev;
+      if (color === undoColor && colorId === undoColorId) return prev;
 
       const newStack = [
         ...prev,
@@ -36,8 +40,8 @@ export default function NoteInfo({ data, nid }) {
           action: Action.EDIT,
           element: ObjectType.NOTE,
           nid: data.id,
-          undo: { color: undoColor },
-          redo: { color: color },
+          undo: { color: undoColor, colorId: undoColorId },
+          redo: { color: color, colorId: colorId },
           message: t("edit_note", {
             noteTitle: data.title,
             extra: "[color]",
@@ -129,11 +133,11 @@ export default function NoteInfo({ data, nid }) {
         />
         <div className="ms-2 flex flex-col gap-2">
           <ColorPicker
-            usePopover={true}
             readOnly={layout.readOnly}
             value={data.color}
-            onChange={(color) => updateNote(data.id, { color })}
-            onColorPick={(color) => handleColorPick(color)}
+            colorId={data.colorId ?? null}
+            onChange={(color) => updateNote(data.id, { color, colorId: null })}
+            onColorPick={(color, colorId) => handleColorPick(color, colorId)}
           />
           <Button
             type="danger"

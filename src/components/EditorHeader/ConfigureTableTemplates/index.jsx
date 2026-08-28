@@ -1,12 +1,18 @@
-import { Button, Modal, Toast } from "@douyinfe/semi-ui";
+import { Button, Modal, Toast, Collapse, Input } from "@douyinfe/semi-ui";
+import { IconDeleteStroked } from "@douyinfe/semi-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Empty from "../../EditorSidePanel/Empty";
-import TemplateRow from "./components/TemplateRow";
-import { getTableTemplates, saveTableTemplates } from "../../../utils/tableTemplates";
+import TemplateFieldsEditor from "./components/TemplateFieldsEditor";
+import { useDiagram } from "../../../hooks";
+import {
+  getTableTemplates,
+  saveTableTemplates,
+} from "../../../utils/tableTemplates";
 
 export default function ConfigureTableTemplates({ open, onClose }) {
   const { t } = useTranslation();
+  const { database } = useDiagram();
   const [templates, setTemplates] = useState([]);
 
   useEffect(() => {
@@ -20,15 +26,36 @@ export default function ConfigureTableTemplates({ open, onClose }) {
     );
   };
 
-  const handleDelete = (id) => {
+  const handleDeleteTemplate = (id) => {
     setTemplates((prev) => prev.filter((tpl) => tpl.id !== id));
   };
 
+  const handleFieldsChange = (id, fields) => {
+    setTemplates((prev) =>
+      prev.map((tpl) => (tpl.id === id ? { ...tpl, fields } : tpl)),
+    );
+  };
+
   const handleSave = () => {
-    const invalid = templates.find((tpl) => !tpl.name.trim());
-    if (invalid) {
-      Toast.warning(t("template_name_required"));
-      return;
+    for (const tpl of templates) {
+      if (!tpl.name.trim()) {
+        Toast.warning(t("template_name_required"));
+        return;
+      }
+      for (const field of tpl.fields) {
+        if (!field.name.trim() || !field.type.trim()) {
+          Toast.warning(
+            t("template_field_invalid", { templateName: tpl.name }),
+          );
+          return;
+        }
+        if (field.references && !field.references.table.trim()) {
+          Toast.warning(
+            t("template_fk_table_required", { templateName: tpl.name }),
+          );
+          return;
+        }
+      }
     }
     saveTableTemplates(templates);
     Toast.success(t("saved"));
@@ -44,7 +71,7 @@ export default function ConfigureTableTemplates({ open, onClose }) {
     <Modal
       title={t("configure_table_templates")}
       centered
-      size="medium"
+      size="large"
       visible={open}
       onCancel={handleClose}
       footer={
@@ -61,26 +88,47 @@ export default function ConfigureTableTemplates({ open, onClose }) {
       <p className="opacity-80 mb-5">{t("table_templates_description")}</p>
 
       {templates.length > 0 ? (
-        <div className="max-h-96 overflow-y-auto">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="text-left text-[var(--semi-color-text-2)]">
-                <th className="font-medium align-bottom">{t("name")}</th>
-                <th className="font-medium align-bottom">{t("columns")}</th>
-                <th aria-label={t("delete")} />
-              </tr>
-            </thead>
-            <tbody>
-              {templates.map((tpl) => (
-                <TemplateRow
-                  key={tpl.id}
-                  template={tpl}
-                  onRename={handleRename}
-                  onDelete={handleDelete}
+        <div className="max-h-[60vh] overflow-y-auto">
+          <Collapse keepDOM={false} lazyRender accordion>
+            {templates.map((tpl) => (
+              <Collapse.Panel
+                key={tpl.id}
+                itemKey={tpl.id}
+                header={
+                  <div className="flex items-center gap-2 w-full pr-2">
+                    <Input
+                      value={tpl.name}
+                      placeholder={t("name")}
+                      validateStatus={
+                        tpl.name.trim() === "" ? "error" : "default"
+                      }
+                      className="flex-1"
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(v) => handleRename(tpl.id, v)}
+                    />
+                    <span className="text-xs opacity-60 whitespace-nowrap">
+                      {tpl.fields.length} {t("columns")}
+                    </span>
+                    <Button
+                      icon={<IconDeleteStroked />}
+                      type="danger"
+                      theme="borderless"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteTemplate(tpl.id);
+                      }}
+                    />
+                  </div>
+                }
+              >
+                <TemplateFieldsEditor
+                  fields={tpl.fields}
+                  database={database}
+                  onChange={(fields) => handleFieldsChange(tpl.id, fields)}
                 />
-              ))}
-            </tbody>
-          </table>
+              </Collapse.Panel>
+            ))}
+          </Collapse>
         </div>
       ) : (
         <div className="text-center">

@@ -86,6 +86,7 @@ export default function DiagramContextProvider({ children }) {
       indices: [],
       uniqueConstraints: [],
       color: defaultBlue,
+      colorId: null,
       collapsed: false,
     };
     if (data) {

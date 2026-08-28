@@ -33,6 +33,7 @@ import {
   useDiagram,
   useSelect,
   useUndoRedo,
+  useColorPalette,
 } from "../../hooks";
 import TableInfo from "../EditorSidePanel/TablesTab/TableInfo";
 import { useTranslation } from "react-i18next";
@@ -78,6 +79,13 @@ export default function Table({
     bulkSelectedElements,
     setBulkSelectedElements,
   } = useSelect();
+
+  const { resolve: resolveColor } = useColorPalette();
+  const tableColor = resolveColor(tableData);
+  const resolveTypeColor = (rt) =>
+    rt?.isCustom
+      ? resolveColor({ color: rt.color, colorId: rt.colorId })
+      : rt?.color;
 
   const borderColor = useMemo(
     () => (settings.mode === "light" ? "border-zinc-300" : "border-zinc-600"),
@@ -294,7 +302,7 @@ export default function Table({
           )}
           <div
             className="h-[10px] w-full rounded-t-md"
-            style={{ backgroundColor: tableData.color }}
+            style={{ backgroundColor: tableColor }}
           />
           <div
             className={`${
@@ -435,7 +443,9 @@ export default function Table({
                           (resolved.isCustom ? "" : resolved.color)
                         }
                         style={
-                          resolved.isCustom ? { color: resolved.color } : {}
+                          resolved.isCustom
+                            ? { color: resolveTypeColor(resolved) }
+                            : {}
                         }
                       >
                         {e.type +
@@ -628,7 +638,9 @@ export default function Table({
                     (fieldResolved.isCustom ? "" : fieldResolved.color)
                   }
                   style={
-                    fieldResolved.isCustom ? { color: fieldResolved.color } : {}
+                    fieldResolved.isCustom
+                      ? { color: resolveTypeColor(fieldResolved) }
+                      : {}
                   }
                 >
                   {fieldData.type +

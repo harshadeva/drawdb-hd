@@ -15,6 +15,7 @@ import { databases } from "../../../data/databases";
 import { MODAL } from "../../../data/constants";
 import { create, patch, SHARE_FILENAME } from "../../../api/gists";
 import { getCustomTypes } from "../../../utils/customTypes";
+import { getUsedColorTemplates } from "../../../utils/colorTemplates";
 import { Slot, useExtensions } from "../../../context/ExtensionsContext";
 import { queryConfig } from "../../../utils/queryConfig";
 
@@ -67,6 +68,12 @@ export default function Share({ title, setModal }) {
       }
     }
     const hasCustomTypes = Object.keys(usedCustomTypes).length > 0;
+    const usedColorTemplates = getUsedColorTemplates({
+      tables,
+      areas,
+      notes,
+      customTypes: usedCustomTypes,
+    });
 
     return JSON.stringify({
       title,
@@ -78,6 +85,9 @@ export default function Share({ title, setModal }) {
       ...(databases[database].hasTypes && { types: types }),
       ...(databases[database].hasEnums && { enums: enums }),
       ...(hasCustomTypes && { customTypes: usedCustomTypes }),
+      ...(usedColorTemplates.length > 0 && {
+        colorTemplates: usedColorTemplates,
+      }),
       transform: transform,
     });
   }, [

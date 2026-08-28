@@ -47,6 +47,7 @@ export default function TableInfo({ data }) {
   const { setSaveState } = useSaveState();
   const [editField, setEditField] = useState({});
   const initialColorRef = useRef(data.color);
+  const initialColorIdRef = useRef(data.colorId ?? null);
   const [templateName, setTemplateName] = useState(data.name);
   const [showTemplatePopover, setShowTemplatePopover] = useState(false);
 
@@ -62,9 +63,11 @@ export default function TableInfo({ data }) {
     setShowTemplatePopover(false);
   };
 
-  const handleColorPick = (color) => {
+  const handleColorPick = (color, colorId = null) => {
+    updateTable(data.id, { color, colorId });
     setUndoStack((prev) => {
       let undoColor = initialColorRef.current;
+      let undoColorId = initialColorIdRef.current;
       const lastColorChange = prev.findLast(
         (e) =>
           e.element === ObjectType.TABLE &&
@@ -74,9 +77,10 @@ export default function TableInfo({ data }) {
       );
       if (lastColorChange) {
         undoColor = lastColorChange.redo.color;
+        undoColorId = lastColorChange.redo.colorId ?? null;
       }
 
-      if (color === undoColor) return prev;
+      if (color === undoColor && colorId === undoColorId) return prev;
 
       const newStack = [
         ...prev,
@@ -85,8 +89,8 @@ export default function TableInfo({ data }) {
           element: ObjectType.TABLE,
           component: "self",
           tid: data.id,
-          undo: { color: undoColor },
-          redo: { color: color },
+          undo: { color: undoColor, colorId: undoColorId },
+          redo: { color: color, colorId: colorId },
           message: t("edit_table", {
             tableName: data.name,
             extra: "[color]",
@@ -378,11 +382,11 @@ export default function TableInfo({ data }) {
 
       <div className="flex justify-between items-center gap-1 mt-5 mb-2">
         <ColorPicker
-          usePopover={true}
           readOnly={layout.readOnly}
           value={data.color}
-          onChange={(color) => updateTable(data.id, { color })}
-          onColorPick={(color) => handleColorPick(color)}
+          colorId={data.colorId ?? null}
+          onChange={(color) => updateTable(data.id, { color, colorId: null })}
+          onColorPick={(color, colorId) => handleColorPick(color, colorId)}
         />
         <div className="flex gap-1">
           <Dropdown

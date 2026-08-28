@@ -71,6 +71,7 @@ export const tableSchema = {
       },
     },
     color: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
+    colorId: { type: ["string", "null"] },
     inherits: {
       type: "array",
       items: { type: ["string"] },
@@ -90,6 +91,7 @@ export const areaSchema = {
     height: { type: "number" },
     locked: { type: "boolean" },
     color: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
+    colorId: { type: ["string", "null"] },
     subtype: { type: "string", enum: ["area", "boundary"] },
   },
   required: ["id", "name", "x", "y", "width", "height", "color"],
@@ -104,6 +106,7 @@ export const noteSchema = {
     title: { type: "string" },
     content: { type: "string" },
     color: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
+    colorId: { type: ["string", "null"] },
     height: { type: "number" },
     width: { type: "number" },
     locked: { type: "boolean" },
@@ -153,8 +156,19 @@ export const customTypeEntrySchema = {
   properties: {
     type: { type: "string", minLength: 1 },
     color: { type: "string" },
+    colorId: { type: ["string", "null"] },
   },
   required: ["type", "color"],
+};
+
+export const colorTemplateSchema = {
+  type: "object",
+  properties: {
+    id: { type: "string", minLength: 1 },
+    name: { type: "string", minLength: 1 },
+    value: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
+  },
+  required: ["id", "name", "value"],
 };
 
 export const tableTemplateFieldSchema = {
@@ -254,6 +268,10 @@ export const jsonSchema = {
     enums: {
       type: "array",
       items: { ...enumSchema },
+    },
+    colorTemplates: {
+      type: "array",
+      items: { ...colorTemplateSchema },
     },
     title: { type: "string" },
     database: { type: "string" },
