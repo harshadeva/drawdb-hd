@@ -265,6 +265,17 @@ export default function Canvas() {
       setBulkSelectedElements([...bulkSelectedElements, ...elements]);
     } else {
       setBulkSelectedElements(elements);
+      // A plain click (or marquee) on empty canvas that hit nothing also
+      // clears the single selection, so an element — area, table, note —
+      // doesn't stay highlighted until something else is picked.
+      if (elements.length === 0) {
+        setSelectedElement((prev) => ({
+          ...prev,
+          element: ObjectType.NONE,
+          id: -1,
+          open: false,
+        }));
+      }
     }
   };
 

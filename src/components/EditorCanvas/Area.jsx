@@ -175,15 +175,13 @@ export default function Area({
         width={data.width > 0 ? data.width : 0}
         height={data.height > 0 ? data.height : 0}
         onPointerDown={onPointerDown}
-        // For a boundary, the container is inert and only the opted-in title
-        // (and the border <rect> below) capture clicks, so elements inside
-        // stay individually selectable.
-        style={{ pointerEvents: isBoundary ? "none" : undefined }}
+        // The area body is inert: only the title (which opts back in below) and
+        // the border hit-band <rect> after this <foreignObject> select/drag the
+        // area, so tables and nested areas inside it stay individually clickable.
+        style={{ pointerEvents: "none" }}
       >
         <div
           className={`w-full h-full p-2 rounded border-2 ${
-            isBoundary ? "" : "cursor-move"
-          } ${
             isHovered
               ? "border-dashed border-[#ff6a3d]"
               : isSelected
@@ -199,10 +197,7 @@ export default function Area({
                 ? areaColor
                 : undefined,
             borderWidth: isBoundary ? boundaryBorderWidth : undefined,
-            // A boundary's interior stays click-through so tables/areas inside
-            // it can be selected individually; only its title (below) and its
-            // border hit-band (the <rect> after this <foreignObject>) grab it.
-            pointerEvents: isBoundary ? "none" : undefined,
+            pointerEvents: "none",
           }}
           onDoubleClick={edit}
         >
@@ -222,12 +217,18 @@ export default function Area({
                 {data.name}
               </div>
             ) : (
-              <div className="text-color select-none overflow-hidden text-ellipsis">
+              <div
+                className="text-color select-none overflow-hidden text-ellipsis cursor-move"
+                style={{ pointerEvents: "auto" }}
+                title={data.name}
+                onPointerDown={onPointerDown}
+                onDoubleClick={edit}
+              >
                 {data.name}
               </div>
             )}
             {(isHovered || (areaIsOpen() && !layout.sidebar)) && (
-              <div style={isBoundary ? { pointerEvents: "auto" } : undefined}>
+              <div style={{ pointerEvents: "auto" }}>
                 <ButtonGroup
                   type="tertiary"
                   size="small"
@@ -268,7 +269,7 @@ export default function Area({
           </div>
         </div>
       </foreignObject>
-      {isBoundary && data.width > 0 && data.height > 0 && (
+      {data.width > 0 && data.height > 0 && (
         <rect
           x={data.x}
           y={data.y}
@@ -277,7 +278,7 @@ export default function Area({
           rx={4}
           fill="none"
           stroke="transparent"
-          strokeWidth={Math.max(boundaryBorderWidth + 8, 12)}
+          strokeWidth={Math.max((data.borderWidth ?? 2) + 8, 12)}
           pointerEvents="stroke"
           style={{ cursor: "move" }}
           onPointerDown={onPointerDown}
