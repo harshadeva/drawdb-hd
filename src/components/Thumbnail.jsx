@@ -104,7 +104,7 @@ export default function Thumbnail({ diagram, i, zoom, theme }) {
                     >
                       <div className="flex items-center justify-start">
                         <div
-                          className={`w-[6px] h-[6px] bg-[#ff6a3dcc] rounded-full me-2`}
+                          className={`w-[6px] h-[6px] bg-[#2f68adcc] rounded-full me-2`}
                         ></div>
                         <div>{f.name}</div>
                       </div>

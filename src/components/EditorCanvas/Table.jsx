@@ -577,7 +577,7 @@ export default function Table({
             } flex items-center gap-2 overflow-hidden`}
           >
             <button
-              className="shrink-0 w-[10px] h-[10px] bg-[#ff6a3dcc] rounded-full"
+              className="shrink-0 w-[10px] h-[10px] bg-[#2f68adcc] rounded-full"
               onPointerDown={(e) => {
                 if (!e.isPrimary) return;
 
