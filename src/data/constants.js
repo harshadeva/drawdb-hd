@@ -30,6 +30,11 @@ export const AreaSubtype = {
   BOUNDARY: "boundary",
 };
 
+// Default border thickness (px) for a boundary element; adjustable per boundary.
+export const defaultBoundaryBorderWidth = 2;
+export const minBoundaryBorderWidth = 1;
+export const maxBoundaryBorderWidth = 12;
+
 export const Cardinality = {
   ONE_TO_ONE: "one_to_one",
   ONE_TO_MANY: "one_to_many",

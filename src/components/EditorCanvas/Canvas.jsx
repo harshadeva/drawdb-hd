@@ -330,7 +330,8 @@ export default function Canvas() {
     }
 
     if (!isSelected) {
-      // dragging an area carries the tables and notes inside it along with it
+      // dragging an area (or boundary) carries the tables, notes and nested
+      // areas inside it along with it
       if (type === ObjectType.AREA) {
         setBulkSelectedElements([
           elementInBulk,
@@ -350,8 +351,9 @@ export default function Canvas() {
     });
   };
 
-  // Tables/notes whose center lies within an area — used so moving the area
-  // moves its contents along with it.
+  // Tables, notes and nested areas whose center lies within an area — used so
+  // moving the area (a boundary in particular) moves its whole contents along
+  // with it, regardless of the type of element inside.
   const getElementsInsideArea = (area) => {
     const withinArea = (x, y) =>
       x >= area.x &&
@@ -371,6 +373,18 @@ export default function Canvas() {
           type: ObjectType.TABLE,
           currentCoords: { x: table.x, y: table.y },
           initialCoords: { x: table.x, y: table.y },
+        });
+      }
+    });
+
+    areas.forEach((other) => {
+      if (other.id === area.id || other.locked) return;
+      if (withinArea(other.x + other.width / 2, other.y + other.height / 2)) {
+        contained.push({
+          id: other.id,
+          type: ObjectType.AREA,
+          currentCoords: { x: other.x, y: other.y },
+          initialCoords: { x: other.x, y: other.y },
         });
       }
     });

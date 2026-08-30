@@ -4,6 +4,7 @@ import {
   ButtonGroup,
   Popover,
   Input,
+  InputNumber,
   Divider,
 } from "@douyinfe/semi-ui";
 import ColorPicker from "../EditorSidePanel/ColorPicker";
@@ -19,6 +20,9 @@ import {
   ObjectType,
   State,
   AreaSubtype,
+  defaultBoundaryBorderWidth,
+  minBoundaryBorderWidth,
+  maxBoundaryBorderWidth,
 } from "../../data/constants";
 import {
   useLayout,
@@ -160,6 +164,7 @@ export default function Area({
   }, [selectedElement, data, bulkSelectedElements]);
 
   const isBoundary = data.subtype === AreaSubtype.BOUNDARY;
+  const boundaryBorderWidth = data.borderWidth ?? defaultBoundaryBorderWidth;
 
   return (
     <g ref={ref}>
@@ -170,9 +175,15 @@ export default function Area({
         width={data.width > 0 ? data.width : 0}
         height={data.height > 0 ? data.height : 0}
         onPointerDown={onPointerDown}
+        // For a boundary, the container is inert and only the opted-in title
+        // (and the border <rect> below) capture clicks, so elements inside
+        // stay individually selectable.
+        style={{ pointerEvents: isBoundary ? "none" : undefined }}
       >
         <div
-          className={`w-full h-full p-2 rounded cursor-move border-2 ${
+          className={`w-full h-full p-2 rounded border-2 ${
+            isBoundary ? "" : "cursor-move"
+          } ${
             isHovered
               ? "border-dashed border-blue-500"
               : isSelected
@@ -187,53 +198,91 @@ export default function Area({
               isBoundary && !isHovered && !isSelected
                 ? areaColor
                 : undefined,
+            borderWidth: isBoundary ? boundaryBorderWidth : undefined,
+            // A boundary's interior stays click-through so tables/areas inside
+            // it can be selected individually; only its title (below) and its
+            // border hit-band (the <rect> after this <foreignObject>) grab it.
+            pointerEvents: isBoundary ? "none" : undefined,
           }}
           onDoubleClick={edit}
         >
           <div className="flex justify-between gap-1 w-full">
-            <div className="text-color select-none overflow-hidden text-ellipsis">
-              {data.name}
-            </div>
-            {(isHovered || (areaIsOpen() && !layout.sidebar)) && (
-              <ButtonGroup
-                type="tertiary"
-                size="small"
-                aria-label="Area actions"
+            {isBoundary ? (
+              <div
+                className="font-bold uppercase tracking-wide text-[15px] leading-tight px-2 py-[2px] rounded select-none overflow-hidden text-ellipsis whitespace-nowrap max-w-full cursor-move"
+                style={{
+                  color: areaColor,
+                  backgroundColor: `${areaColor}1f`,
+                  pointerEvents: "auto",
+                }}
+                title={data.name}
+                onPointerDown={onPointerDown}
+                onDoubleClick={edit}
               >
-                <Button
-                  size="small"
+                {data.name}
+              </div>
+            ) : (
+              <div className="text-color select-none overflow-hidden text-ellipsis">
+                {data.name}
+              </div>
+            )}
+            {(isHovered || (areaIsOpen() && !layout.sidebar)) && (
+              <div style={isBoundary ? { pointerEvents: "auto" } : undefined}>
+                <ButtonGroup
                   type="tertiary"
-                  icon={
-                    data.locked ? (
-                      <IconLock size="small" />
-                    ) : (
-                      <IconUnlock size="small" />
-                    )
-                  }
-                  onClick={lockUnlockArea}
-                  disabled={layout.readOnly}
-                />
-                <Popover
-                  visible={areaIsOpen() && !layout.sidebar}
-                  onClickOutSide={onClickOutSide}
-                  stopPropagation
-                  content={<EditPopoverContent data={data} />}
-                  trigger="custom"
-                  position="rightTop"
-                  showArrow
+                  size="small"
+                  aria-label="Area actions"
                 >
                   <Button
                     size="small"
                     type="tertiary"
-                    icon={<IconEdit size="small" />}
-                    onClick={edit}
+                    icon={
+                      data.locked ? (
+                        <IconLock size="small" />
+                      ) : (
+                        <IconUnlock size="small" />
+                      )
+                    }
+                    onClick={lockUnlockArea}
+                    disabled={layout.readOnly}
                   />
-                </Popover>
-              </ButtonGroup>
+                  <Popover
+                    visible={areaIsOpen() && !layout.sidebar}
+                    onClickOutSide={onClickOutSide}
+                    stopPropagation
+                    content={<EditPopoverContent data={data} />}
+                    trigger="custom"
+                    position="rightTop"
+                    showArrow
+                  >
+                    <Button
+                      size="small"
+                      type="tertiary"
+                      icon={<IconEdit size="small" />}
+                      onClick={edit}
+                    />
+                  </Popover>
+                </ButtonGroup>
+              </div>
             )}
           </div>
         </div>
       </foreignObject>
+      {isBoundary && data.width > 0 && data.height > 0 && (
+        <rect
+          x={data.x}
+          y={data.y}
+          width={data.width}
+          height={data.height}
+          rx={4}
+          fill="none"
+          stroke="transparent"
+          strokeWidth={Math.max(boundaryBorderWidth + 8, 12)}
+          pointerEvents="stroke"
+          style={{ cursor: "move" }}
+          onPointerDown={onPointerDown}
+        />
+      )}
       {isHovered && (
         <>
           <circle
@@ -290,6 +339,7 @@ function EditPopoverContent({ data }) {
   const { layout } = useLayout();
   const initialColorRef = useRef(data.color);
   const initialColorIdRef = useRef(data.colorId ?? null);
+  const isBoundary = data.subtype === AreaSubtype.BOUNDARY;
 
   const handleColorPick = (color, colorId = null) => {
     updateArea(data.id, { color, colorId });
@@ -367,6 +417,49 @@ function EditPopoverContent({ data }) {
           onColorPick={(color, colorId) => handleColorPick(color, colorId)}
         />
       </div>
+      {isBoundary && (
+        <div className="w-[280px] mb-2">
+          <div className="text-xs font-medium mb-1 ms-1">
+            {t("border_width")}
+          </div>
+          <InputNumber
+            className="w-full"
+            min={minBoundaryBorderWidth}
+            max={maxBoundaryBorderWidth}
+            step={1}
+            disabled={layout.readOnly}
+            value={data.borderWidth ?? defaultBoundaryBorderWidth}
+            onChange={(value) => {
+              if (typeof value !== "number" || Number.isNaN(value)) return;
+              updateArea(data.id, { borderWidth: value });
+            }}
+            onFocus={() =>
+              setEditField({
+                borderWidth: data.borderWidth ?? defaultBoundaryBorderWidth,
+              })
+            }
+            onBlur={() => {
+              const next = data.borderWidth ?? defaultBoundaryBorderWidth;
+              if (next === editField.borderWidth) return;
+              setUndoStack((prev) => [
+                ...prev,
+                {
+                  action: Action.EDIT,
+                  element: ObjectType.AREA,
+                  aid: data.id,
+                  undo: { borderWidth: editField.borderWidth },
+                  redo: { borderWidth: next },
+                  message: t("edit_area", {
+                    areaName: data.name,
+                    extra: "[border width]",
+                  }),
+                },
+              ]);
+              setRedoStack([]);
+            }}
+          />
+        </div>
+      )}
       <Divider />
       <Button
         icon={<IconDeleteStroked />}

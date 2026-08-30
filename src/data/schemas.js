@@ -93,6 +93,7 @@ export const areaSchema = {
     color: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
     colorId: { type: ["string", "null"] },
     subtype: { type: "string", enum: ["area", "boundary"] },
+    borderWidth: { type: "number" },
   },
   required: ["id", "name", "x", "y", "width", "height", "color"],
 };

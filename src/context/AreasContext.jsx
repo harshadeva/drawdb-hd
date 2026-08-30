@@ -6,6 +6,7 @@ import {
   ObjectType,
   AreaSubtype,
   defaultBlue,
+  defaultBoundaryBorderWidth,
 } from "../data/constants";
 import { useSelect, useTransform, useUndoRedo, useCollab } from "../hooks";
 
@@ -31,8 +32,8 @@ export default function AreasContextProvider({ children }) {
     } else {
       const width = 200;
       const height = 200;
-      const namePrefix =
-        subtype === AreaSubtype.BOUNDARY ? "boundary" : "area";
+      const isBoundary = subtype === AreaSubtype.BOUNDARY;
+      const namePrefix = isBoundary ? "boundary" : "area";
       created = {
         id: areas.length,
         name: `${namePrefix}_${areas.length}`,
@@ -44,6 +45,7 @@ export default function AreasContextProvider({ children }) {
         colorId: null,
         locked: false,
         subtype,
+        ...(isBoundary ? { borderWidth: defaultBoundaryBorderWidth } : {}),
       };
       setAreas((prev) => [...prev, { ...created, id: prev.length }]);
     }
