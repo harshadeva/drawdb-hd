@@ -1,463 +1,408 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import SimpleCanvas from "../components/SimpleCanvas";
 import Navbar from "../components/Navbar";
-import { diagram } from "../data/heroDiagram";
+import Logo from "../components/Logo";
+import BoardPreview from "../components/BoardPreview";
 import mysql_icon from "../assets/mysql.png";
 import postgres_icon from "../assets/postgres.png";
 import sqlite_icon from "../assets/sqlite.png";
 import mariadb_icon from "../assets/mariadb.png";
-import oraclesql_icon from "../assets/oraclesql.png";
 import sql_server_icon from "../assets/sql-server.png";
-import discord from "../assets/discord.png";
-import github from "../assets/github.png";
-import warp from "../assets/warp.png";
-import screenshot from "../assets/screenshot.png";
 import FadeIn from "../animations/FadeIn";
-import axios from "axios";
 import { languages } from "../i18n/i18n";
-import { Tweet } from "react-tweet";
 import { socials } from "../data/socials";
 
-function shortenNumber(number) {
-  if (number < 1000) return number;
-
-  if (number >= 1000 && number < 1_000_000)
-    return `${(number / 1000).toFixed(1)}k`;
-}
+const primaryBtn =
+  "inline-flex items-center justify-center gap-2 rounded-full bg-[#ff6a3d] px-7 py-3.5 font-semibold text-white shadow-[0_14px_34px_-12px_rgba(255,106,61,0.7)] transition-all duration-300 hover:bg-[#e8532a] hover:-translate-y-0.5";
+const ghostBtn =
+  "inline-flex items-center justify-center gap-2 rounded-full border-2 border-[#161422]/15 bg-white px-7 py-3.5 font-semibold text-[#161422] transition-all duration-300 hover:border-[#161422]/40";
 
 export default function LandingPage() {
-  const [stats, setStats] = useState({ stars: 18000, forks: 1200 });
-
   useEffect(() => {
-    const fetchStats = async () => {
-      await axios
-        .get("https://api.github-star-counter.workers.dev/user/drawdb-io")
-        .then((res) => setStats(res.data));
-    };
-
     document.body.setAttribute("theme-mode", "light");
-    document.title =
-      "drawDB | Online database diagram editor and SQL generator";
-
-    fetchStats();
+    document.title = "Dbraw — draw your database, row by row";
   }, []);
 
   return (
-    <div>
-      <div className="flex flex-col h-screen bg-zinc-100">
-        <div className="text-white font-semibold py-1 text-sm text-center bg-linear-to-r from-[#12495e] from-10% via-slate-500 to-[#12495e]" />
+    <div className="bg-[#fbf6f0] text-[#161422]">
+      <div className="flex flex-col min-h-screen">
+        <div className="bg-[#161422] py-2 text-center text-[13px] font-medium tracking-wide text-white/90">
+          Dbraw is free while it&apos;s young — grab it before we grow up.{" "}
+          <Link
+            to="/editor"
+            className="font-semibold text-[#ff8a3d] hover:underline"
+          >
+            Open the board →
+          </Link>
+        </div>
 
         <FadeIn duration={0.6}>
           <Navbar />
         </FadeIn>
 
-        {/* Hero section */}
-        <div className="flex-1 flex-col relative mx-4 md:mx-0 mb-4 rounded-3xl bg-white">
-          <div className="h-full md:hidden">
-            <SimpleCanvas diagram={diagram} zoom={0.85} />
-          </div>
-          <div className="hidden md:block h-full bg-dots" />
-          <div className="absolute left-12 w-[45%] top-[50%] translate-y-[-54%] md:left-[50%] md:translate-x-[-50%] p-8 md:p-3 md:w-full text-zinc-800">
+        {/* Hero */}
+        <div className="relative mx-3 mb-3 flex flex-1 items-center overflow-hidden rounded-[28px] border border-[#e9e0d4] bg-white bg-dots md:mx-0">
+          <div className="mx-auto grid w-full max-w-6xl grid-cols-2 items-center gap-12 px-12 py-14 lg:grid-cols-1 lg:gap-10 md:px-6 md:py-10">
             <FadeIn duration={0.75}>
-              <div className="md:px-3">
-                <h1 className="text-[42px] md:text-3xl font-bold tracking-wide bg-linear-to-r from-sky-900 from-10% via-slate-500 to-[#12495e] inline-block text-transparent bg-clip-text">
-                  Draw, Copy, and Paste
+              <div>
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#ff6a3d]/25 bg-[#ff6a3d]/10 px-3 py-1 text-xs font-semibold text-[#c9451f]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#ff6a3d]" />
+                  DB + draw + your new bro
+                </div>
+                <h1 className="text-[46px] font-extrabold leading-[1.05] tracking-tight md:text-[34px]">
+                  Draw your database,{" "}
+                  <span className="bg-gradient-to-r from-[#ff6a3d] via-[#ff5e3a] to-[#7a5cff] bg-clip-text text-transparent">
+                    row by row
+                  </span>
+                  .
                 </h1>
-                <div className="text-lg font-medium mt-1 sliding-vertical">
-                  Free and open source, simple, and intuitive database design
-                  editor, data-modeler, and SQL generator.{" "}
-                  <span className="ms-2 sm:block sm:ms-0 text-slate-500 bg-white font-bold whitespace-nowrap">
-                    No sign up
+                <p className="mt-4 max-w-xl text-lg font-medium text-[#161422]/70 md:text-base">
+                  Dbraw is the friendly drawing board for database schemas. Drag
+                  out tables, snap relationships together, and walk away with
+                  clean SQL. No account, no setup, no fuss.
+                </p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link to="/editor" className={primaryBtn}>
+                    Start drawing <i className="bi bi-arrow-right" />
+                  </Link>
+                  <button
+                    className={ghostBtn}
+                    onClick={() =>
+                      document
+                        .getElementById("board")
+                        .scrollIntoView({ behavior: "smooth" })
+                    }
+                  >
+                    See how it works
+                  </button>
+                </div>
+                <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-[#161422]/55">
+                  <span>
+                    <i className="bi bi-check-circle-fill me-1.5 text-[#ff6a3d]" />
+                    Runs in your browser
                   </span>
-                  <span className="ms-2 sm:block sm:ms-0 text-slate-500 bg-white font-bold whitespace-nowrap">
-                    Free of charge
+                  <span>
+                    <i className="bi bi-check-circle-fill me-1.5 text-[#ff6a3d]" />
+                    Exports real SQL
                   </span>
-                  <span className="ms-2 sm:block sm:ms-0 text-slate-500 bg-white font-bold whitespace-nowrap">
-                    Quick and easy
+                  <span>
+                    <i className="bi bi-check-circle-fill me-1.5 text-[#ff6a3d]" />
+                    Yours to keep
                   </span>
                 </div>
               </div>
             </FadeIn>
-            <div className="mt-4 font-semibold md:mt-12">
-              <button
-                className="py-3 mb-4 xl:mb-0 mr-4 transition-all duration-300 bg-white border rounded-full shadow-lg px-9 border-zinc-200 hover:bg-zinc-100 cursor-pointer"
-                onClick={() =>
-                  document
-                    .getElementById("learn-more")
-                    .scrollIntoView({ behavior: "smooth" })
-                }
-              >
-                Learn more
-              </button>
-              <Link
-                to="/editor"
-                className="inline-block py-3 text-white transition-all duration-300 rounded-full shadow-lg bg-sky-900 ps-7 pe-6 hover:bg-sky-800"
-              >
-                Try it for yourself <i className="bi bi-arrow-right ms-1"></i>
-              </Link>
-            </div>
+
+            <FadeIn duration={0.95}>
+              <div className="rounded-[22px] border border-[#e9e0d4] bg-white p-2.5 shadow-[0_40px_90px_-45px_rgba(22,20,34,0.5)] lg:mx-auto lg:max-w-xl">
+                <BoardPreview />
+              </div>
+            </FadeIn>
           </div>
         </div>
       </div>
 
-      {/* Learn more */}
-      <div id="learn-more">
-        <div className="bg-zinc-100 py-10 px-28 md:px-8">
-          {/* Supported by */}
-          <div className="text-center mb-16">
-            <div className="text-2xl md:text-xl font-bold text-sky-800 mb-8">
-              Supported by
+      {/* Philosophy band */}
+      <section id="board" className="bg-[#161422] px-10 py-20 text-white md:px-6">
+        <FadeIn duration={0.8}>
+          <div className="mx-auto max-w-5xl">
+            <div className="text-sm font-bold uppercase tracking-[0.2em] text-[#ff8a3d]">
+              It&apos;s a board, not a form
             </div>
-            <div>
-              <a
-                href="https://warp.dev/drawdb"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <img
-                  src={warp}
-                  alt="warp.dev"
-                  width={260}
-                  className="m-auto mb-4"
-                />
-                <div className="font-semibold text-lg md:text-base">
-                  Next-gen AI-powered intelligent terminal for all platforms
+            <h2 className="mt-3 max-w-2xl text-[34px] font-extrabold leading-tight tracking-tight md:text-2xl">
+              Think with your hands
+            </h2>
+            <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-white/65">
+              Most schema tools make you fill in dialogs. Dbraw gives you a
+              canvas — push tables around like sticky notes, draw a line to make
+              a relationship, and watch the SQL keep itself in sync.
+            </p>
+            <div className="mt-10 grid grid-cols-3 gap-8 md:grid-cols-1 md:gap-6">
+              {boardPoints.map((p, i) => (
+                <div key={i}>
+                  <i className={`bi ${p.icon} text-2xl text-[#ff8a3d]`} />
+                  <div className="mt-3 font-bold">{p.title}</div>
+                  <p className="mt-1.5 text-sm leading-relaxed text-white/55">
+                    {p.body}
+                  </p>
                 </div>
-              </a>
+              ))}
             </div>
           </div>
-          <div className="mt-16 w-[75%] text-center sm:w-full mx-auto shadow-xs rounded-2xl border p-6 bg-white space-y-3 mb-12">
-            <div className="text-lg font-medium">
-              Build diagrams with a few clicks, see the full picture, export SQL
-              scripts, customize your editor, and more.
-            </div>
-            <img src={screenshot} className="mx-auto" />
-          </div>
-          <div className="flex justify-center items-center gap-28 md:block">
-            <div className="text-center mb-4">
-              <div className="text-5xl md:text-3xl font-bold text-sky-800">
-                {shortenNumber(stats.stars)}
-              </div>
-              <div className="ms-1 mt-1 font-medium tracking-wide">
-                GitHub stars
-              </div>
-            </div>
-            <div className="text-center mb-4">
-              <div className="text-5xl md:text-3xl font-bold text-sky-800">
-                {shortenNumber(stats.forks)}
-              </div>
-              <div className="ms-1 mt-1 font-medium tracking-wide">
-                GitHub forks
-              </div>
-            </div>
-            <div className="text-center mb-4">
-              <div className="text-5xl md:text-3xl font-bold text-sky-800">
-                {shortenNumber(languages.length)}
-              </div>
-              <div className="ms-1 mt-1 font-medium tracking-wide">
-                Languages
-              </div>
-            </div>
-          </div>
-          <div className="text-lg font-medium text-center mt-12 mb-6">
-            Design for your database
-          </div>
-          <div className="grid grid-cols-3 place-items-center sm:grid-cols-1 sm:gap-10">
-            {dbs.map((s, i) => (
-              <img
-                key={"icon-" + i}
-                src={s.icon}
-                style={{ height: s.height }}
-                className="opacity-70 hover:opacity-100 transition-opacity duration-300 md:scale-[0.7] md:mx-auto"
-              />
-            ))}
-          </div>
-        </div>
-        <svg
-          viewBox="0 0 1440 54"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          width="100%"
-          className="bg-transparent"
-        >
-          <path
-            d="M0 54C0 54 320 0 720 0C1080 0 1440 54 1440 54V0H0V100Z"
-            fill="#f4f4f5"
-          />
-        </svg>
-      </div>
+        </FadeIn>
+      </section>
 
-      {/* Features */}
-      <div id="features" className="py-8 px-36 md:px-8">
-        <FadeIn duration={1}>
-          <div className="text-base font-medium text-center text-sky-900">
-            More than just an editor
+      {/* Three moves */}
+      <section className="px-10 py-24 md:px-6 md:py-16">
+        <FadeIn duration={0.8}>
+          <div className="mx-auto max-w-5xl">
+            <div className="text-sm font-bold uppercase tracking-[0.2em] text-[#ff6a3d]">
+              Three moves
+            </div>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-2xl">
+              Blank board to shippable schema
+            </h2>
           </div>
-          <div className="text-2xl mt-1 font-medium text-center">
-            What drawDB has to offer
-          </div>
-          <div className="grid grid-cols-3 gap-8 mt-10 md:grid-cols-2 sm:grid-cols-1">
-            {features.map((f, i) => (
+          <div className="mx-auto mt-12 grid max-w-5xl grid-cols-3 gap-6 md:grid-cols-1">
+            {steps.map((s, i) => (
               <div
-                key={"feature" + i}
-                className="flex rounded-xl hover:bg-zinc-100 border border-zinc-100 shadow-xs hover:-translate-y-2 transition-all duration-300"
+                key={i}
+                className="rounded-2xl border border-[#e9e0d4] bg-white p-7"
               >
-                <div className="bg-sky-700 px-0.5 rounded-l-xl" />
-                <div className="px-8 py-4 ">
-                  <div className="text-lg font-semibold mb-3">{f.title}</div>
-                  {f.content}
-                  <div className="mt-2 text-xs opacity-60">{f.footer}</div>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#161422] text-sm font-extrabold text-white">
+                    {i + 1}
+                  </div>
+                  <i className={`bi ${s.icon} text-xl text-[#ff6a3d]`} />
                 </div>
+                <div className="mt-4 text-lg font-bold">{s.title}</div>
+                <p className="mt-2 text-[15px] leading-relaxed text-[#161422]/65">
+                  {s.body}
+                </p>
               </div>
             ))}
           </div>
         </FadeIn>
-      </div>
+      </section>
 
-      {/* Tweets */}
-      <div className="px-40 mt-6 md:px-8">
-        <div className="text-center text-2xl md:text-xl font-medium">
-          What the internet says about us
-        </div>
-        <div
-          data-theme="light"
-          className="grid grid-cols-2 place-items-center md:grid-cols-1"
-        >
-          <Tweet id="1816111365125218343" />
-          <Tweet id="1817933406337905021" />
-          <Tweet id="1785457354777006524" />
-          <Tweet id="1776842268042756248" />
-        </div>
-      </div>
-
-      {/* Contact us */}
-      <svg
-        viewBox="0 0 1440 54"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        width="100%"
-        className="bg-transparent -scale-100"
+      {/* Features */}
+      <section
+        id="features"
+        className="border-y border-[#e9e0d4] bg-white px-10 py-24 md:px-6 md:py-16"
       >
-        <path
-          d="M0 48 C0 48 320 0 720 0C1080 0 1440 48 1440 48V0H0V100Z"
-          fill="#f4f4f5"
-        />
-      </svg>
-      <div className="bg-zinc-100 py-8 px-32 md:px-8">
-        <div className="mt-4 mb-2 text-2xl font-bold text-center">
-          Reach out to us
-        </div>
-        <div className="text-lg text-center mb-4">
-          We love hearing from you. Join our community on Discord, GitHub, and
-          X.
-        </div>
-        <div className="px-36 text-center md:px-8">
-          <div className="md:block md:space-y-3 flex gap-3 justify-center">
-            <a
-              className="inline-block"
-              href={socials.github}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <div className="bg-zinc-800 hover:opacity-90 transition-all duration-300 flex items-center gap-4 px-14 py-4 rounded-lg">
-                <img src={github} className="h-8" />
-                <div className="text-lg text-white font-bold">
-                  See the source
-                </div>
-              </div>
-            </a>
-            <a
-              className="inline-block"
-              href={socials.discord}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <div className="bg-[#5865f2] hover:opacity-90 transition-all duration-300 flex items-center gap-4 px-8 py-4 rounded-lg">
-                <img src={discord} className="h-8" />
-                <div className="text-lg text-white font-bold">
-                  Join us on Discord
-                </div>
-              </div>
-            </a>
-            <a
-              className="inline-block"
-              href={socials.twitter}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <div className="text-white bg-zinc-800 hover:opacity-90 transition-all duration-300 flex items-center gap-4 px-12 py-4 rounded-lg">
-                <i className="text-2xl bi bi-twitter-x" />
-                <div className="text-lg  font-bold">Follow us on X</div>
-              </div>
-            </a>
+        <FadeIn duration={0.9}>
+          <div className="mx-auto max-w-5xl">
+            <div className="text-sm font-bold uppercase tracking-[0.2em] text-[#ff6a3d]">
+              The toolbox
+            </div>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-2xl">
+              Sharp tools, no clutter
+            </h2>
           </div>
-          <div className="px-30 md:px-8 text-center mt-4">
-            <a
-              className="w-full"
-              href={socials.sponsor}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <div className="bg-white border-2 border-rose-400 hover:opacity-90 transition-all duration-300 flex items-center justify-center gap-4 px-12 py-3 rounded-full">
-                <div className="relative text-2xl mt-1">
-                  <i className="fa-solid fa-heart text-rose-300" />
-                  <i className="absolute top-0.5 left-0 fa-regular fa-heart text-rose-400" />
+          <div className="mx-auto mt-12 grid max-w-5xl grid-cols-3 gap-5 md:grid-cols-2 sm:grid-cols-1">
+            {features.map((f, i) => (
+              <div
+                key={i}
+                className="group rounded-2xl border border-[#e9e0d4] bg-[#fbf6f0] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#ff6a3d]/40 hover:shadow-[0_24px_50px_-30px_rgba(255,106,61,0.6)]"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ff6a3d]/12 text-[#ff6a3d]">
+                  <i className={`bi ${f.icon} text-xl`} />
                 </div>
-                <div className="text-xl font-semibold">Support us</div>
+                <div className="mt-4 font-bold">{f.title}</div>
+                <p className="mt-1.5 text-sm leading-relaxed text-[#161422]/65">
+                  {f.body}
+                </p>
               </div>
-            </a>
+            ))}
           </div>
-        </div>
-      </div>
+          <div className="mx-auto mt-6 max-w-5xl text-sm text-[#161422]/45">
+            Also in the box: keyboard shortcuts · presentation mode · dark theme ·
+            autosave · {languages.length} languages.
+          </div>
+        </FadeIn>
+      </section>
 
-      <div className="bg-red-700 py-1 text-center text-white text-xs font-semibold px-3">
-        Attention! The diagrams are saved in your browser. Before clearing the
-        browser make sure to back up your data.
-      </div>
-      <hr className="border-zinc-300" />
-      <div className="text-center text-sm py-3">
-        &copy; {new Date().getFullYear()} <strong>drawDB</strong> - All rights
-        reserved.
-      </div>
+      {/* Databases strip */}
+      <section className="px-10 py-12 md:px-6">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-10 gap-y-6 md:justify-center md:text-center">
+          <div className="text-[15px] font-semibold text-[#161422]/70 md:w-full">
+            Generates real SQL for
+          </div>
+          <div className="flex flex-wrap items-center gap-x-10 gap-y-5 md:justify-center">
+            {dbs.map((s, i) => (
+              <img
+                key={i}
+                src={s.icon}
+                alt={s.name}
+                style={{ height: s.height }}
+                className="opacity-55 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="border-t border-[#e9e0d4] px-10 py-24 md:px-6 md:py-16">
+        <div className="mx-auto grid max-w-5xl grid-cols-[0.8fr_1.2fr] gap-12 md:grid-cols-1">
+          <div>
+            <h2 className="text-3xl font-extrabold tracking-tight md:text-2xl">
+              Good questions
+            </h2>
+            <p className="mt-3 text-[15px] text-[#161422]/60">
+              Still curious? The board is the fastest answer.
+            </p>
+            <Link to="/editor" className={`${primaryBtn} mt-5`}>
+              Try Dbraw
+            </Link>
+          </div>
+          <div className="divide-y divide-[#e9e0d4] border-y border-[#e9e0d4]">
+            {faqs.map((q, i) => (
+              <div key={i} className="py-5">
+                <div className="font-bold">{q.q}</div>
+                <p className="mt-1.5 text-[15px] leading-relaxed text-[#161422]/65">
+                  {q.a}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="px-6 pb-20">
+        <div className="mx-auto max-w-5xl overflow-hidden rounded-[28px] bg-[#161422] px-10 py-16 text-center text-white md:px-6">
+          <Logo size={44} markOnly className="mb-6" />
+          <h2 className="text-3xl font-extrabold tracking-tight md:text-2xl">
+            Your schema is waiting to be drawn
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-white/60">
+            Open a blank board and watch the whole thing take shape in a couple
+            of minutes.
+          </p>
+          <Link to="/editor" className={`${primaryBtn} mt-7`}>
+            Open the board <i className="bi bi-arrow-right" />
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-[#161422] text-white/70">
+        <div className="bg-[#ff6a3d] px-4 py-2 text-center text-[12px] font-semibold text-white">
+          Heads up: your diagrams live in this browser. Back them up (File →
+          Export) before clearing browsing data.
+        </div>
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-10 py-10 md:px-6">
+          <Logo size={30} dark />
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium">
+            <Link to="/editor" className="hover:text-white">
+              Editor
+            </Link>
+            <Link to="/templates" className="hover:text-white">
+              Templates
+            </Link>
+            <a
+              href={socials.docs}
+              className="hover:text-white"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Docs
+            </a>
+            <Link to="/bug-report" className="hover:text-white">
+              Report a bug
+            </Link>
+            <a
+              href={socials.github}
+              className="hover:text-white"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <i className="bi bi-github me-1" />
+              GitHub
+            </a>
+          </div>
+        </div>
+        <div className="border-t border-white/10 px-10 py-5 text-center text-xs text-white/45 md:px-6">
+          &copy; {new Date().getFullYear()} Dbraw · Open source · Draw freely.
+        </div>
+      </footer>
     </div>
   );
 }
 
 const dbs = [
-  { icon: mysql_icon, height: 80 },
-  { icon: postgres_icon, height: 48 },
-  { icon: sqlite_icon, height: 64 },
-  { icon: mariadb_icon, height: 64 },
-  { icon: sql_server_icon, height: 64 },
-  { icon: oraclesql_icon, height: 172 },
+  { icon: mysql_icon, name: "MySQL", height: 34 },
+  { icon: postgres_icon, name: "PostgreSQL", height: 26 },
+  { icon: sqlite_icon, name: "SQLite", height: 30 },
+  { icon: mariadb_icon, name: "MariaDB", height: 30 },
+  { icon: sql_server_icon, name: "SQL Server", height: 30 },
+];
+
+const boardPoints = [
+  {
+    icon: "bi-bounding-box",
+    title: "Group it up",
+    body: "Wrap tables in subject areas, or a database boundary that moves as one piece.",
+  },
+  {
+    icon: "bi-grid-3x3",
+    title: "Stays tidy",
+    body: "Everything snaps to a grid, so the board keeps its shape as the schema grows.",
+  },
+  {
+    icon: "bi-arrow-counterclockwise",
+    title: "Undo the canvas",
+    body: "Step back through the whole board — not just the last field you touched.",
+  },
+];
+
+const steps = [
+  {
+    icon: "bi-table",
+    title: "Draw the tables",
+    body: "Drop tables onto the board and type your columns. Areas and notes keep big schemas tidy.",
+  },
+  {
+    icon: "bi-bezier2",
+    title: "Connect the rows",
+    body: "Drag from one field to another to form a relationship. Dbraw sorts out keys and cardinality.",
+  },
+  {
+    icon: "bi-filetype-sql",
+    title: "Export the SQL",
+    body: "Take a dialect-aware DDL script, a JSON snapshot, or an image — whatever the next step needs.",
+  },
 ];
 
 const features = [
   {
-    title: "Export",
-    content: (
-      <div>
-        Export the DDL script to run on your database or export the diagram as a
-        JSON or an image.
-      </div>
-    ),
-    footer: "",
+    icon: "bi-box-arrow-up-right",
+    title: "Export anywhere",
+    body: "DDL for your database, JSON for your repo, or a crisp image for the deck.",
   },
   {
+    icon: "bi-arrow-repeat",
     title: "Reverse engineer",
-    content: (
-      <div>
-        Already have a schema? Import a DDL script to generate a diagram.
-      </div>
-    ),
-    footer: "",
+    body: "Already have a schema? Paste a DDL script and Dbraw draws the diagram.",
   },
   {
-    title: "Generate migrations",
-    content: (
-      <div>
-        Version your diagram and generate migration scripts to update your
-        database
-      </div>
-    ),
-    footer: "",
+    icon: "bi-layers",
+    title: "Version & migrate",
+    body: "Snapshot a diagram over time and generate the migration scripts between versions.",
   },
   {
-    title: "Customizable workspace",
-    content: (
-      <div>
-        Customize the UI to fit your preferences. Select the components you want
-        in your view.
-      </div>
-    ),
-    footer: "",
-  },
-  {
-    title: "Keyboard shortcuts",
-    content: (
-      <div>
-        Speed up development with keyboard shortcuts. See all available
-        shortcuts
-        <Link
-          to={`${socials.docs}/shortcuts`}
-          className="ms-1.5 text-blue-500 hover:underline"
-        >
-          here
-        </Link>
-        .
-      </div>
-    ),
-    footer: "",
-  },
-  {
+    icon: "bi-grid-1x2",
     title: "Templates",
-    content: (
-      <div>
-        Start off with pre-built templates. Get a quick start or get inspiration
-        for your design.
-      </div>
-    ),
-    footer: "",
+    body: "Start from a ready-made schema, or save your own boilerplate to reuse later.",
   },
   {
-    title: "Custom Templates",
-    content: (
-      <div>
-        Have boilerplate structures? Save time by saving them as templates and
-        load them when needed.
-      </div>
-    ),
-    footer: "",
-  },
-  {
-    title: "Robust editor",
-    content: (
-      <div>
-        Undo, redo, copy, paste, duplicate and more. Add tables, subject areas,
-        and notes.
-      </div>
-    ),
-    footer: "",
-  },
-  {
+    icon: "bi-shield-check",
     title: "Issue detection",
-    content: (
-      <div>
-        Detect and tackle errors in the diagram to make sure the scripts are
-        correct.
-      </div>
-    ),
-    footer: "",
+    body: "Dbraw flags the mistakes that would quietly break your generated scripts.",
   },
   {
-    title: "Relational databases",
-    content: (
-      <div>
-        We support 5 relational databases - MySQL, PostgreSQL, SQLite, MariaDB,
-        SQL Server.
-      </div>
-    ),
-    footer: "",
+    icon: "bi-diagram-3",
+    title: "Object-relational",
+    body: "Custom types and JSON schemas for databases that go past flat tables.",
+  },
+];
+
+const faqs = [
+  {
+    q: "Do I need an account?",
+    a: "No. Dbraw opens straight to a board and saves to your browser. Sign-in is never in the way.",
   },
   {
-    title: "Object-Relational databases",
-    content: (
-      <div>
-        Add custom types for object-relational databases, or create custom JSON
-        schemes.
-      </div>
-    ),
-    footer: "",
+    q: "Where do my diagrams live?",
+    a: "On your machine, in this browser. Export to JSON any time you want a portable copy or a backup.",
   },
   {
-    title: "Presentation mode",
-    content: (
-      <div>
-        Present your diagrams on a big screen during team meetings and
-        discussions.
-      </div>
-    ),
-    footer: "",
+    q: "Which databases are supported?",
+    a: "MySQL, PostgreSQL, SQLite, MariaDB and SQL Server, each with dialect-aware SQL generation.",
+  },
+  {
+    q: "Is it really free?",
+    a: "Yes. Dbraw is open source and free to use. Draw as much as you like.",
   },
 ];

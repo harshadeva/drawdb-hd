@@ -1,144 +1,113 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import logo from "../assets/logo_light_160.png";
 import { SideSheet } from "@douyinfe/semi-ui";
 import { IconMenu } from "@douyinfe/semi-icons";
+import Logo from "./Logo";
 import { socials } from "../data/socials";
+
+const navLinkClass =
+  "text-[15px] font-semibold text-[#161422]/70 transition-colors duration-200 hover:text-[#161422]";
 
 export default function Navbar() {
   const [openMenu, setOpenMenu] = useState(false);
 
+  const scrollToFeatures = () => {
+    document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <>
-      <div className="py-4 px-12 sm:px-4 flex justify-between items-center">
-        <div className="flex items-center justify-between w-full">
-          <Link to="/">
-            <img src={logo} alt="logo" className="h-[48px] sm:h-[32px]" />
+      <div className="flex items-center justify-between px-10 py-4 sm:px-4">
+        <Link to="/" aria-label="Dbraw home">
+          <Logo size={38} />
+        </Link>
+
+        <div className="flex items-center gap-9 md:hidden">
+          <button className={navLinkClass} onClick={scrollToFeatures}>
+            Features
+          </button>
+          <Link to="/templates" className={navLinkClass}>
+            Templates
           </Link>
-          <div className="md:hidden flex gap-12">
-            <Link
-              className="text-lg font-semibold hover:text-sky-800 transition-colors duration-300"
-              onClick={() =>
-                document
-                  .getElementById("features")
-                  .scrollIntoView({ behavior: "smooth" })
-              }
-            >
-              Features
-            </Link>
-            <Link
-              to="/editor"
-              className="text-lg font-semibold hover:text-sky-800 transition-colors duration-300"
-            >
-              Editor
-            </Link>
-            <Link
-              to="/templates"
-              className="text-lg font-semibold hover:text-sky-800 transition-colors duration-300"
-            >
-              Templates
-            </Link>
-            <Link
-              to={socials.docs}
-              className="text-lg font-semibold hover:text-sky-800 transition-colors duration-300"
-            >
-              Docs
-            </Link>
-          </div>
-          <div className="md:hidden block space-x-3 ms-12">
-            <a
-              title="Jump to Github"
-              className="px-2 py-2 hover:opacity-60 transition-all duration-300 rounded-full text-2xl"
-              href={socials.github}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <i className="opacity-70 bi bi-github" />
-            </a>
-            <a
-              title="Follow us on X"
-              className="px-2 py-2 hover:opacity-60 transition-all duration-300 rounded-full text-2xl"
-              href={socials.twitter}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <i className="opacity-70 bi bi-twitter-x" />
-            </a>
-            <a
-              title="Join the community on Discord"
-              className="px-2 py-2 hover:opacity-60 transition-all duration-300 rounded-full text-2xl"
-              href={socials.discord}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <i className="opacity-70 bi bi-discord" />
-            </a>
-            <a
-              title="Sponsor on GitHub"
-              className="p-1 px-1.5 relative flex-inline items-center justify-center hover:opacity-60 bg-white transition-all duration-300 rounded-full text-xl"
-              href={socials.sponsor}
-              target="_blank"
-              rel="noreferrer"
-            >
-               <i className="fa-solid fa-heart text-rose-300" />
-               <i className="absolute top-1.5 left-1.5 fa-regular fa-heart text-rose-400" />
-            </a>
-          </div>
+          <a
+            href={socials.docs}
+            target="_blank"
+            rel="noreferrer"
+            className={navLinkClass}
+          >
+            Docs
+          </a>
+          <a
+            href={socials.github}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xl text-[#161422]/60 transition-colors hover:text-[#161422]"
+            title="GitHub"
+          >
+            <i className="bi bi-github" />
+          </a>
+          <Link
+            to="/editor"
+            className="rounded-full bg-[#161422] px-5 py-2.5 text-[15px] font-semibold text-white transition-all duration-300 hover:bg-[#2a2740]"
+          >
+            Open the board
+          </Link>
         </div>
+
         <button
           onClick={() => setOpenMenu((prev) => !prev)}
-          className="hidden md:inline-block h-[24px]"
+          className="hidden h-[24px] text-[#161422] md:inline-block"
+          aria-label="Menu"
         >
           <IconMenu size="extra-large" />
         </button>
       </div>
-      <hr />
+      <hr className="border-[#e9e0d4]" />
+
       <SideSheet
-        title={
-          <img src={logo} alt="logo" className="sm:h-[32px] md:h-[42px]" />
-        }
+        title={<Logo size={34} />}
         visible={openMenu}
         onCancel={() => setOpenMenu(false)}
         width={window.innerWidth}
       >
-        <Link
-          className="hover:bg-zinc-100 block p-3 text-base font-semibold"
+        <button
+          className="block w-full p-3 text-left text-base font-semibold hover:bg-[#fbf6f0]"
           onClick={() => {
-            document
-              .getElementById("features")
-              .scrollIntoView({ behavior: "smooth" });
+            scrollToFeatures();
             setOpenMenu(false);
           }}
         >
           Features
-        </Link>
-        <hr />
-        <Link
-          to="/editor"
-          className="hover:bg-zinc-100 block p-3 text-base font-semibold"
-        >
-          Editor
-        </Link>
-        <hr />
+        </button>
+        <hr className="border-[#e9e0d4]" />
         <Link
           to="/templates"
-          className="hover:bg-zinc-100 block p-3 text-base font-semibold"
+          className="block p-3 text-base font-semibold hover:bg-[#fbf6f0]"
         >
           Templates
         </Link>
-        <hr />
-        <Link
-          to={socials.docs}
-          className="hover:bg-zinc-100 block p-3 text-base font-semibold"
+        <hr className="border-[#e9e0d4]" />
+        <a
+          href={socials.docs}
+          target="_blank"
+          rel="noreferrer"
+          className="block p-3 text-base font-semibold hover:bg-[#fbf6f0]"
         >
           Docs
-        </Link>
-        <hr />
+        </a>
+        <hr className="border-[#e9e0d4]" />
         <Link
-          to={socials.sponsor}
-          className="hover:bg-zinc-100 block p-3 text-base font-semibold"
+          to="/bug-report"
+          className="block p-3 text-base font-semibold hover:bg-[#fbf6f0]"
         >
-          Sponsor
+          Report a bug
+        </Link>
+        <hr className="border-[#e9e0d4]" />
+        <Link
+          to="/editor"
+          className="mt-3 block rounded-full bg-[#ff6a3d] p-3 text-center text-base font-semibold text-white"
+        >
+          Open the board
         </Link>
       </SideSheet>
     </>

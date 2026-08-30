@@ -5,8 +5,11 @@ import { IconDeleteStroked } from "@douyinfe/semi-icons";
 import { db } from "../data/db";
 import { useLiveQuery } from "dexie-react-hooks";
 import Thumbnail from "../components/Thumbnail";
-import logo_light from "../assets/logo_light_160.png";
-import template_screenshot from "../assets/template_screenshot.png";
+import Logo from "../components/Logo";
+import BoardPreview from "../components/BoardPreview";
+
+const forkBtn =
+  "flex items-center gap-1.5 rounded-full border border-[#e9e0d4] bg-white px-3 py-1.5 text-sm font-semibold text-[#161422] transition-all duration-200 hover:border-[#ff6a3d]/50 hover:text-[#ff6a3d]";
 
 export default function Templates() {
   const defaultTemplates = useLiveQuery(() =>
@@ -26,35 +29,39 @@ export default function Templates() {
   };
 
   useEffect(() => {
-    document.title = "Templates | drawDB";
+    document.body.setAttribute("theme-mode", "light");
+    document.title = "Templates · Dbraw";
   }, []);
 
   return (
-    <div>
+    <div className="min-h-screen bg-[#fbf6f0] text-[#161422]">
       <div className="min-h-screen">
-        <div className="sm:py-3 py-5 px-12 xl:px-20 sm:px-6 flex justify-between items-center select-none">
-          <div className="flex items-center justify-start">
-            <Link to="/">
-              <img
-                src={logo_light}
-                alt="logo"
-                className="me-2 sm:h-[28px] md:h-[46px] h-[48px]"
-              />
+        <div className="flex items-center justify-between px-12 py-5 select-none xl:px-20 sm:px-6 sm:py-3">
+          <div className="flex items-center gap-4">
+            <Link to="/" aria-label="Dbraw home">
+              <Logo size={38} />
             </Link>
-            <div className="ms-4 sm:text-sm xl:text-xl text-xl font-semibold">
+            <span className="h-6 w-px bg-[#e9e0d4]" />
+            <div className="text-xl font-bold sm:text-sm xl:text-xl">
               Templates
             </div>
           </div>
+          <Link
+            to="/editor"
+            className="rounded-full bg-[#161422] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-[#2a2740] sm:hidden"
+          >
+            Open the board
+          </Link>
         </div>
-        <hr className="border-zinc-300" />
-        <div className="xl:px-20 sm:px-6 px-12 py-6">
-          <div className="w-full md:w-[75%] xl:w-[50%] mb-2">
-            <div className="text-2xl sm:text-lg font-semibold mb-2 text-neutral-800">
-              Database schema templates
+        <hr className="border-[#e9e0d4]" />
+        <div className="px-12 py-8 xl:px-20 sm:px-6">
+          <div className="mb-4 w-full md:w-[75%] xl:w-[55%]">
+            <div className="text-3xl font-extrabold tracking-tight sm:text-xl">
+              Start from a schema that already works
             </div>
-            <div className="text-sm text-neutral-700">
-              A compilation of database entity relationship diagrams to give you
-              a quick start or inspire your application&apos;s architecture.
+            <div className="mt-2 text-[15px] text-[#161422]/65">
+              A shelf of ready-made entity-relationship diagrams. Fork one to get
+              a running start, or borrow the parts you need.
             </div>
           </div>
           <Tabs>
@@ -62,13 +69,13 @@ export default function Templates() {
               tab={<span className="mx-2">Default templates</span>}
               itemKey="1"
             >
-              <div className="grid xl:grid-cols-3 grid-cols-2 sm:grid-cols-1 gap-10 my-6">
+              <div className="my-6 grid grid-cols-2 gap-8 xl:grid-cols-3 sm:grid-cols-1">
                 {defaultTemplates?.map((t, i) => (
                   <div
                     key={t.id}
-                    className="bg-gray-100 hover:translate-y-[-6px] transition-all duration-300 border rounded-md"
+                    className="overflow-hidden rounded-2xl border border-[#e9e0d4] bg-white transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_50px_-30px_rgba(22,20,34,0.35)]"
                   >
-                    <div className="h-48">
+                    <div className="h-48 bg-[#fbf6f0]">
                       <Thumbnail
                         diagram={t}
                         i={"1" + i}
@@ -77,18 +84,19 @@ export default function Templates() {
                       />
                     </div>
                     <div className="px-4 py-3">
-                      <div className="flex justify-between">
-                        <div className="text-lg font-bold text-zinc-700">
-                          {t.title}
-                        </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-lg font-bold">{t.title}</div>
                         <button
-                          className="border rounded-sm px-2 py-1 bg-white hover:bg-gray-200 transition-all duration-300"
+                          className={forkBtn}
                           onClick={() => forkTemplate(t.templateId)}
                         >
-                          <i className="fa-solid fa-code-fork"></i>
+                          <i className="fa-solid fa-code-fork" />
+                          Fork
                         </button>
                       </div>
-                      <div>{t.description}</div>
+                      <div className="mt-1 text-sm text-[#161422]/65">
+                        {t.description}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -99,38 +107,33 @@ export default function Templates() {
               itemKey="2"
             >
               {customTemplates?.length > 0 ? (
-                <div className="grid xl:grid-cols-3 grid-cols-2 sm:grid-cols-1 gap-8 my-6">
+                <div className="my-6 grid grid-cols-2 gap-8 xl:grid-cols-3 sm:grid-cols-1">
                   {customTemplates?.map((c, i) => (
                     <div
                       key={c.id}
-                      className="bg-gray-100 hover:translate-y-[-6px] transition-all duration-300 border rounded-md"
+                      className="overflow-hidden rounded-2xl border border-[#e9e0d4] bg-white transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_50px_-30px_rgba(22,20,34,0.35)]"
                     >
-                      <div className="h-48">
+                      <div className="h-48 bg-[#fbf6f0]">
                         <Thumbnail diagram={c} i={"2" + i} zoom={0.3} />
                       </div>
-                      <div className="px-4 py-3 w-full">
-                        <div className="flex justify-between">
-                          <div className="text-lg font-bold text-zinc-700">
-                            {c.title}
-                          </div>
-                          <div>
-                            <button
-                              className="me-1 border rounded-sm px-2 py-1 bg-white hover:bg-gray-200 transition-all duration-300"
-                              onClick={() => forkTemplate(c.templateId)}
-                            >
-                              <i className="fa-solid fa-code-fork"></i>
-                            </button>
-                          </div>
-                        </div>
-                        <div className="flex justify-around mt-2">
+                      <div className="w-full px-4 py-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="text-lg font-bold">{c.title}</div>
                           <button
-                            className="w-full text-center flex justify-center items-center border rounded-sm px-2 py-1 bg-white hover:bg-gray-200 transition-all duration-300 text-red-500"
-                            onClick={() => deleteTemplate(c.id)}
+                            className={forkBtn}
+                            onClick={() => forkTemplate(c.templateId)}
                           >
-                            <IconDeleteStroked />
-                            <div className="ms-1.5 font-semibold">Delete</div>
+                            <i className="fa-solid fa-code-fork" />
+                            Fork
                           </button>
                         </div>
+                        <button
+                          className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-full border border-[#e9e0d4] bg-white px-2 py-1.5 text-sm font-semibold text-rose-500 transition-all duration-200 hover:border-rose-300 hover:bg-rose-50"
+                          onClick={() => deleteTemplate(c.id)}
+                        >
+                          <IconDeleteStroked />
+                          Delete
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -143,29 +146,28 @@ export default function Templates() {
                     bordered
                     icon={null}
                     closeIcon={null}
-                    description={<div>You have no custom templates saved.</div>}
+                    description={<div>You have no saved templates yet.</div>}
                   />
-                  <div className="grid grid-cols-5 sm:grid-cols-1 gap-4 place-content-center my-4">
-                    <img
-                      src={template_screenshot}
-                      className="border col-span-3 sm:cols-span-1 rounded-sm"
-                    />
-                    <div className="col-span-2 sm:cols-span-1">
-                      <div className="text-xl font-bold my-4">
-                        How to save a template
+                  <div className="my-4 grid grid-cols-5 place-content-center gap-6 sm:grid-cols-1">
+                    <div className="col-span-3 rounded-xl border border-[#e9e0d4] bg-white p-3 sm:col-span-1">
+                      <BoardPreview />
+                    </div>
+                    <div className="col-span-2 sm:col-span-1">
+                      <div className="my-4 text-xl font-bold">
+                        Save your own template
                       </div>
                       <Steps direction="vertical" style={{ margin: "12px" }}>
                         <Steps.Step
-                          title="Build a diagram"
-                          description="Build the template in the editor"
+                          title="Draw a diagram"
+                          description="Build the structure on the board"
                         />
                         <Steps.Step
                           title="Save as template"
-                          description="Editor > File > Save as template"
+                          description="Editor → File → Save as template"
                         />
                         <Steps.Step
-                          title="Load a template"
-                          description="Fork a template to build on"
+                          title="Fork it later"
+                          description="Reuse it as the base for new work"
                         />
                       </Steps>
                     </div>
@@ -176,10 +178,9 @@ export default function Templates() {
           </Tabs>
         </div>
       </div>
-      <hr className="border-zinc-300 my-1" />
-      <div className="text-center text-sm py-3">
-        &copy; {new Date().getFullYear()} <strong>drawDB</strong> - All rights
-        reserved.
+      <hr className="border-[#e9e0d4]" />
+      <div className="py-5 text-center text-sm text-[#161422]/55">
+        &copy; {new Date().getFullYear()} <strong className="text-[#161422]">Dbraw</strong> · Draw freely.
       </div>
     </div>
   );

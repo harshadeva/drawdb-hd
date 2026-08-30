@@ -3,7 +3,7 @@ import axios from "axios";
 export const SHARE_FILENAME = "share.json";
 export const VERSION_FILENAME = "versionned.json";
 
-const description = "drawDB diagram";
+const description = "Dbraw diagram";
 
 const baseUrl =
   import.meta.env.VITE_GIST_BACKEND_URL ||

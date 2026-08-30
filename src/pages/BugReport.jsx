@@ -1,6 +1,4 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import logo_light from "../assets/logo_light_160.png";
-import logo_dark from "../assets/logo_dark_160.png";
 import { Banner, Button, Input, Upload, Toast, Spin } from "@douyinfe/semi-ui";
 import { IconGithubLogo, IconPaperclip } from "@douyinfe/semi-icons";
 import RichEditor from "../components/LexicalEditor/RichEditor";
@@ -10,6 +8,7 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 import { $generateHtmlFromNodes } from "@lexical/html";
 import { CLEAR_EDITOR_COMMAND } from "lexical";
 import { Link } from "react-router-dom";
+import Logo from "../components/Logo";
 import { socials } from "../data/socials";
 import { send } from "../api/email";
 import { useThemedPage } from "../hooks";
@@ -67,7 +66,7 @@ function Form({ theme }) {
             $generateHtmlFromNodes(editor),
             data.attachments,
           );
-          Toast.success("Bug reported!");
+          Toast.success("Thanks — bug reported!");
           editor.dispatchCommand(CLEAR_EDITOR_COMMAND, null);
           resetForm();
         } catch {
@@ -80,7 +79,7 @@ function Form({ theme }) {
   }, [editor, data]);
 
   return (
-    <div className="p-5 mt-6 card-theme rounded-md">
+    <div className="card-theme mt-6 rounded-2xl border border-color p-5">
       <Input
         placeholder="Title"
         value={data.title}
@@ -105,14 +104,21 @@ function Form({ theme }) {
         accept="image/*"
         limit={3}
       />
-      <div className="pt-4 flex justify-end items-center">
+      <div className="flex items-center justify-end pt-4">
         <div className="flex items-center">
           <Button
             onClick={onSubmit}
-            style={{ padding: "16px 24px" }}
+            theme="solid"
+            style={{
+              padding: "16px 28px",
+              borderRadius: "9999px",
+              backgroundColor: "#ff6a3d",
+              color: "white",
+              fontWeight: 600,
+            }}
             disabled={loading || data.title === "" || !data.title}
           >
-            Submit
+            Send report
           </Button>
           <div className={loading ? "ms-2" : "hidden"}>
             <Spin />
@@ -127,93 +133,63 @@ export default function BugReport() {
   const theme = localStorage.getItem("theme") || "light";
 
   useEffect(() => {
-    document.title = "Report a bug | drawDB";
+    document.title = "Report a bug · Dbraw";
     document.body.setAttribute("class", "theme");
   }, []);
 
   useThemedPage();
 
+  const divider = theme === "dark" ? "border-zinc-700" : "border-[#e9e0d4]";
+
   return (
-    <>
-      <div className="sm:py-3 py-5 px-20 sm:px-6 flex justify-between items-center">
-        <div className="flex items-center justify-start">
-          <Link to="/">
-            <img
-              src={theme === "dark" ? logo_dark : logo_light}
-              alt="logo"
-              className="me-2 sm:h-[28px] h-[42px]"
-            />
+    <div className={theme === "dark" ? "" : "bg-[#fbf6f0] min-h-screen"}>
+      <div className="flex items-center justify-between px-20 py-5 sm:px-6 sm:py-3">
+        <div className="flex items-center gap-4">
+          <Link to="/" aria-label="Dbraw home">
+            <Logo size={36} dark={theme === "dark"} />
           </Link>
-          <div className="ms-4 sm:text-sm xl:text-lg font-semibold">
-            Report a bug
-          </div>
+          <span className={`h-6 w-px ${theme === "dark" ? "bg-zinc-700" : "bg-[#e9e0d4]"}`} />
+          <div className="text-lg font-bold sm:text-sm">Report a bug</div>
         </div>
       </div>
-      <hr
-        className={`${
-          theme === "dark" ? "border-zinc-700" : "border-zinc-300"
-        } my-1`}
-      />
-      <div className="grid grid-cols-12 gap-8 my-6 mx-20 sm:mx-6">
+      <hr className={`${divider} my-1`} />
+      <div className="mx-20 my-6 grid grid-cols-12 gap-8 sm:mx-6">
         <div className="col-span-4 md:col-span-12 lg:col-span-4">
-          <div className="card-theme p-6 rounded-md">
-            <div className="flex items-center">
-              <IconPaperclip />
-              <div className="font-bold ms-1">Describe the bug </div>
-            </div>
-            <div className="text-sm mt-1">
-              Please provide a clear and concise description of what the bug is.
-            </div>
-            <div className="flex items-center mt-3">
-              <IconPaperclip />
-              <div className="font-bold ms-1">Steps to reproduce the bug </div>
-            </div>
-            <div className="text-sm mt-1">
-              Please provide the steps of how to reproduce the bug.
-            </div>
-            <div className="flex items-center mt-3">
-              <IconPaperclip />
-              <div className="font-bold ms-1">Expected behaviour</div>
-            </div>
-            <div className="text-sm mt-1">
-              Tell us what you expected to see vs what you saw.
-            </div>
-            <div className="flex items-center mt-3">
-              <IconPaperclip />
-              <div className="font-bold ms-1">Your browser and device</div>
-            </div>
-            <div className="text-sm mt-1">
-              What web browser and device did you encounter the bug on.
-            </div>
-            <div className="flex items-center mt-3">
-              <IconPaperclip />
-              <div className="font-bold ms-1">Screenshots</div>
-            </div>
-            <div className="text-sm mt-1">
-              Add any relevant images if possible.
-            </div>
-            <div className="flex items-center justify-center my-2">
-              <hr
-                className={`${
-                  theme === "dark" ? "border-zinc-700" : "border-zinc-300"
-                } grow`}
-              />
-              <div className="text-sm font-semibold m-2">Alternatively</div>
-              <hr
-                className={`${
-                  theme === "dark" ? "border-zinc-700" : "border-zinc-300"
-                } grow`}
-              />
+          <div className="card-theme rounded-2xl border border-color p-6">
+            {[
+              ["Describe the bug", "A clear, concise description of what went wrong."],
+              ["Steps to reproduce", "The exact steps that lead to the bug."],
+              ["Expected behaviour", "What you expected to see versus what you saw."],
+              ["Browser and device", "Where you ran into it."],
+              ["Screenshots", "Add any images that help."],
+            ].map(([title, body]) => (
+              <div key={title} className="mt-3 first:mt-0">
+                <div className="flex items-center">
+                  <IconPaperclip />
+                  <div className="ms-1 font-bold">{title}</div>
+                </div>
+                <div className="mt-1 text-sm opacity-75">{body}</div>
+              </div>
+            ))}
+            <div className="my-3 flex items-center justify-center">
+              <hr className={`${divider} grow`} />
+              <div className="m-2 text-sm font-semibold">or</div>
+              <hr className={`${divider} grow`} />
             </div>
             <Button
               block
               icon={<IconGithubLogo />}
-              style={{ backgroundColor: "#239144", color: "white" }}
+              style={{
+                backgroundColor: "#161422",
+                color: "white",
+                borderRadius: "9999px",
+                fontWeight: 600,
+              }}
               onClick={() => {
                 window.open(`${socials.github}/issues`, "_self");
               }}
             >
-              Add an issue
+              Open a GitHub issue
             </Button>
           </div>
         </div>
@@ -225,10 +201,8 @@ export default function BugReport() {
             closeIcon={null}
             description={
               <div>
-                We value your feedback! If you&apos;ve encountered a bug or
-                issue while using our platform, please help us improve by
-                reporting it. Your input is invaluable in making our service
-                better.
+                Found something broken? Tell us about it. Every report makes
+                Dbraw a little sturdier for the next person.
               </div>
             }
           />
@@ -237,14 +211,10 @@ export default function BugReport() {
           </LexicalComposer>
         </div>
       </div>
-      <hr
-        className={`${
-          theme === "dark" ? "border-zinc-700" : "border-zinc-300"
-        } my-1`}
-      />
-      <div className="text-center text-sm py-3">
-        &copy; {new Date().getFullYear()} <strong>drawDB</strong> - All rights reserved.
+      <hr className={`${divider} my-1`} />
+      <div className="py-5 text-center text-sm opacity-70">
+        &copy; {new Date().getFullYear()} <strong>Dbraw</strong> · Draw freely.
       </div>
-    </>
+    </div>
   );
 }

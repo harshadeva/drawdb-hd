@@ -1,0 +1,43 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="mark" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF8A3D"/><stop offset="0.52" stop-color="#FF5E3A"/><stop offset="1" stop-color="#7A5CFF"/>
+    </linearGradient>
+    <pattern id="dots" width="34" height="34" patternUnits="userSpaceOnUse">
+      <circle cx="17" cy="17" r="1.8" fill="#ff6a3d" fill-opacity="0.16"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="#fbf6f0"/>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+
+  <!-- faint board cards on the right -->
+  <g opacity="0.9">
+    <rect x="720" y="150" width="300" height="150" rx="16" fill="#ffffff" stroke="#ece3d6" stroke-width="2"/>
+    <rect x="720" y="150" width="300" height="8" rx="4" fill="#7a5cff"/>
+    <rect x="860" y="330" width="300" height="130" rx="16" fill="#ffffff" stroke="#ece3d6" stroke-width="2"/>
+    <rect x="860" y="330" width="300" height="8" rx="4" fill="#ff6a3d"/>
+    <path d="M1020 240 H1075 V395 H1160" stroke="#161422" stroke-opacity="0.4" stroke-width="3" fill="none"/>
+  </g>
+
+  <!-- logo mark -->
+  <g transform="translate(96 200)">
+    <rect x="0" y="0" width="104" height="104" rx="28" fill="url(#mark)"/>
+    <g transform="translate(8 8) scale(1.833)" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="20" cy="15" rx="9" ry="3.7"/>
+      <path d="M11 15v8.4c0 2 4 3.7 9 3.7s9-1.7 9-3.7V15"/>
+      <path d="M11 23.2c0 2 4 3.7 9 3.7s9-1.7 9-3.7"/>
+    </g>
+    <path d="M63 62l40 15-17.6 7.6 9.2 19.6-11.2 4.8-9.2-19.6L48 106z" transform="translate(-8 -8) scale(1.0)" fill="#fff"/>
+  </g>
+
+  <text x="228" y="278" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="86" font-weight="800" letter-spacing="-2">
+    <tspan fill="#161422">Db</tspan><tspan fill="#ff6a3d">raw</tspan>
+  </text>
+  <text x="100" y="392" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="40" font-weight="700" fill="#161422">
+    Draw your database, <tspan fill="#ff6a3d">row by row.</tspan>
+  </text>
+  <text x="100" y="446" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="26" fill="#161422" fill-opacity="0.6">
+    The friendly drawing board for database schemas. No account, no fuss.
+  </text>
+</svg>

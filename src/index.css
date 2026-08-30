@@ -169,10 +169,9 @@
 }
 
 .bg-dots {
-  background-color: white;
-  opacity: 0.8;
-  background-image: radial-gradient(rgb(118, 118, 209) 1px, white 1px);
-  background-size: 20px 20px;
+  background-color: #ffffff;
+  background-image: radial-gradient(rgba(255, 106, 61, 0.35) 1.4px, #ffffff 1.4px);
+  background-size: 22px 22px;
 }
 
 .sliding-vertical span {
