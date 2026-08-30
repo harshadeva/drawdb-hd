@@ -270,7 +270,7 @@ export default function Note({ data, onPointerDown }) {
             cy={data.y + data.height / 2}
             r={6}
             fill={settings.mode === "light" ? "white" : "rgb(28, 31, 35)"}
-            stroke="#5891db"
+            stroke="#ff6a3d"
             strokeWidth={2}
             opacity={1}
           />
@@ -279,7 +279,7 @@ export default function Note({ data, onPointerDown }) {
             cy={data.y + data.height / 2}
             r={6}
             fill={settings.mode === "light" ? "white" : "rgb(28, 31, 35)"}
-            stroke="#5891db"
+            stroke="#ff6a3d"
             strokeWidth={2}
             opacity={1}
           />

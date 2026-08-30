@@ -583,7 +583,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
             !version &&
             !dismissedMoveIds.has(loadedDiagramId) && (
               <div className="pointer-events-none absolute inset-x-0 top-3 z-50 flex justify-center">
-                <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-blue-300 bg-blue-50 px-5 py-1.5 shadow-md dark:border-sky-900/50 dark:bg-sky-900/30">
+                <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-[#ff6a3d]/35 bg-[#ff6a3d]/10 px-5 py-1.5 shadow-md">
                   <i className="bi bi-hdd" />
                   <span className="text-sm">
                     This diagram is stored locally on your browser. Move it to

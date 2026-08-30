@@ -264,7 +264,7 @@ export default function Table({
       >
         <div
           onDoubleClick={openEditor}
-          className={`relative border-2 hover:border-dashed hover:border-blue-500
+          className={`relative border-2 hover:border-dashed hover:border-[#ff6a3d]
                select-none rounded-lg w-full ${
                  settings.mode === "light"
                    ? "bg-zinc-100 text-zinc-800"
@@ -273,7 +273,7 @@ export default function Table({
                  isRelationshipSource
                    ? "border-solid border-green-500"
                    : isSelected
-                     ? "border-solid border-blue-500"
+                     ? "border-solid border-[#ff6a3d]"
                      : borderColor
                }`}
           style={{ direction: "ltr" }}
@@ -577,7 +577,7 @@ export default function Table({
             } flex items-center gap-2 overflow-hidden`}
           >
             <button
-              className="shrink-0 w-[10px] h-[10px] bg-[#2f68adcc] rounded-full"
+              className="shrink-0 w-[10px] h-[10px] bg-[#ff6a3dcc] rounded-full"
               onPointerDown={(e) => {
                 if (!e.isPrimary) return;
 

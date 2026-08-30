@@ -122,7 +122,7 @@ export default function Migration({
       <Tabs lazyRender keepDOM={false} className="h-[26rem] -mt-3">
         <TabPane tab={t("scripts")} itemKey="1">
           {loading && (
-            <div className="text-blue-500 flex flex-col gap-2 justify-center items-center h-[24rem]">
+            <div className="text-[#ff6a3d] flex flex-col gap-2 justify-center items-center h-[24rem]">
               <Spin size="middle" />
               <div>{t("loading")}</div>
             </div>
@@ -167,7 +167,7 @@ export default function Migration({
             />
           )}
           {loading && (
-            <div className="text-blue-500 flex flex-col gap-2 justify-center items-center h-[24rem]">
+            <div className="text-[#ff6a3d] flex flex-col gap-2 justify-center items-center h-[24rem]">
               <Spin size="middle" />
               <div>{t("loading")}</div>
             </div>

@@ -25,7 +25,7 @@ export default function RelationshipToolbar({ mode, onSelect, disabled }) {
             aria-pressed={mode === opt.value}
             onClick={() => onSelect(mode === opt.value ? null : opt.value)}
             className={`px-3 py-2 font-semibold text-sm border-l border-color disabled:opacity-40 ${
-              mode === opt.value ? "bg-blue-500 text-white" : ""
+              mode === opt.value ? "bg-[#ff6a3d] text-white" : ""
             }`}
           >
             {opt.label}

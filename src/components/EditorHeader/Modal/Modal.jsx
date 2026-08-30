@@ -309,7 +309,7 @@ export default function Modal({
           );
         } else {
           return (
-            <div className="text-center my-3 text-sky-600">
+            <div className="text-center my-3 text-[#ff6a3d]">
               <Spin tip={t("loading")} size="large" />
             </div>
           );

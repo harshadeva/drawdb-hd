@@ -36,6 +36,42 @@
   }
 }
 
+/*
+ * Dbraw brand accent.
+ *
+ * Semi UI derives every primary affordance — buttons, active tabs, links,
+ * switches, sliders, focus rings, selected rows, info states — from its
+ * --semi-blue-* ramp. Retinting that ramp to Dbraw coral rebrands the editor
+ * chrome (and every Semi surface app-wide) without touching component code.
+ * The canvas draws with its own hex values and is unaffected.
+ * `html body` keeps these ahead of Semi's own `body` / `body[theme-mode]` rules.
+ */
+html body {
+  --semi-blue-0: 255, 242, 237;
+  --semi-blue-1: 255, 225, 214;
+  --semi-blue-2: 255, 200, 180;
+  --semi-blue-3: 255, 168, 137;
+  --semi-blue-4: 255, 133, 92;
+  --semi-blue-5: 255, 106, 61;
+  --semi-blue-6: 232, 83, 42;
+  --semi-blue-7: 200, 66, 31;
+  --semi-blue-8: 161, 50, 21;
+  --semi-blue-9: 125, 38, 16;
+}
+
+html body[theme-mode="dark"] {
+  --semi-blue-0: 43, 22, 15;
+  --semi-blue-1: 61, 30, 20;
+  --semi-blue-2: 92, 43, 27;
+  --semi-blue-3: 138, 62, 38;
+  --semi-blue-4: 202, 82, 50;
+  --semi-blue-5: 255, 106, 61;
+  --semi-blue-6: 255, 133, 92;
+  --semi-blue-7: 255, 165, 130;
+  --semi-blue-8: 255, 198, 174;
+  --semi-blue-9: 255, 228, 217;
+}
+
 .semi-form-vertical .semi-form-field {
   margin: 0;
   padding-top: 8px !important;
@@ -238,7 +274,7 @@
 }
 
 .group:hover .relationship-path {
-  stroke: #0084d1;
+  stroke: #ff6a3d;
   stroke-width: 6;
   stroke-dasharray: 12 8;
   animation: dash-right 1s linear infinite;

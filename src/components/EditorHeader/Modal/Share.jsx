@@ -158,7 +158,7 @@ export default function Share({ title, setModal }) {
     <div>
       <Slot name="share-modal-top" />
       {loading && (
-        <div className="text-blue-500 text-center">
+        <div className="text-[#ff6a3d] text-center">
           <Spin size="middle" />
           <div>{t("loading")}</div>
         </div>

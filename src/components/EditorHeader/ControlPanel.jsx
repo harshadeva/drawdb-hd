@@ -13,7 +13,7 @@ import {
   IconShareStroked,
 } from "@douyinfe/semi-icons";
 import { Link, useMatch, useParams } from "react-router-dom";
-import icon from "../../assets/icon_dark_64.png";
+import Logo from "../Logo";
 import {
   Button,
   Divider,
@@ -2128,13 +2128,8 @@ export default function ControlPanel({
         style={isRtl(i18n.language) ? { direction: "rtl" } : {}}
       >
         <div className="flex justify-start items-center">
-          <Link to="/">
-            <img
-              width={54}
-              src={icon}
-              alt="logo"
-              className="ms-7 min-w-[54px]"
-            />
+          <Link to="/" className="ms-7 shrink-0" aria-label="Dbraw home">
+            <Logo size={34} markOnly />
           </Link>
           <div className="ms-1 mt-1">
             <div className="flex items-center ms-3 gap-2">

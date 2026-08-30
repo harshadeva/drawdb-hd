@@ -338,7 +338,7 @@ export default function Versions({ open, title, setTitle }) {
         </div>
       )}
       {isLoading && !isRecording && (
-        <div className="text-blue-500 text-center my-3">
+        <div className="text-[#ff6a3d] text-center my-3">
           <Spin size="middle" />
           <div>{t("loading")}</div>
         </div>

@@ -1146,7 +1146,7 @@ export default function Canvas() {
                     cx={gridCircleRadius}
                     cy={gridCircleRadius}
                     r={gridCircleRadius}
-                    fill="rgb(99, 152, 191)"
+                    fill="rgb(201, 184, 170)"
                     opacity="1"
                   />
                 </pattern>

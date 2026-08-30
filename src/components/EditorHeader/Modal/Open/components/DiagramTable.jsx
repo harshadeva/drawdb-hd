@@ -102,7 +102,7 @@ export default function DiagramTable({
           return (
             <tr
               key={`${entry.source}-${entry.diagramId}`}
-              className={`cursor-pointer ${selected ? "bg-blue-300/30" : "hover-1"}`}
+              className={`cursor-pointer ${selected ? "bg-[#ff6a3d]/15" : "hover-1"}`}
               onClick={() => onSelect(entry.diagramId)}
             >
               {columns.map((column) => (

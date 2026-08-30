@@ -178,7 +178,7 @@ export default function SidePanel({ width, resize, setResize }) {
       >
         <div
           className={`h-full transition-all w-full ${
-            resize ? "bg-blue-500" : "group-hover:bg-blue-500"
+            resize ? "bg-[#ff6a3d]" : "group-hover:bg-[#ff6a3d]"
           }`}
         />
       </div>

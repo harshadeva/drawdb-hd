@@ -185,9 +185,9 @@ export default function Area({
             isBoundary ? "" : "cursor-move"
           } ${
             isHovered
-              ? "border-dashed border-blue-500"
+              ? "border-dashed border-[#ff6a3d]"
               : isSelected
-                ? `${isBoundary ? "border-dashed" : ""} border-blue-500 opacity-100`
+                ? `${isBoundary ? "border-dashed" : ""} border-[#ff6a3d] opacity-100`
                 : isBoundary
                   ? "border-dashed opacity-100"
                   : "border-slate-400 opacity-100"
@@ -290,7 +290,7 @@ export default function Area({
             cy={data.y}
             r={6}
             fill={settings.mode === "light" ? "white" : "rgb(28, 31, 35)"}
-            stroke="#5891db"
+            stroke="#ff6a3d"
             strokeWidth={2}
             cursor="nwse-resize"
             onPointerDown={(e) => e.isPrimary && handleResize(e, "tl")}
@@ -300,7 +300,7 @@ export default function Area({
             cy={data.y}
             r={6}
             fill={settings.mode === "light" ? "white" : "rgb(28, 31, 35)"}
-            stroke="#5891db"
+            stroke="#ff6a3d"
             strokeWidth={2}
             cursor="nesw-resize"
             onPointerDown={(e) => e.isPrimary && handleResize(e, "tr")}
@@ -310,7 +310,7 @@ export default function Area({
             cy={data.y + data.height}
             r={6}
             fill={settings.mode === "light" ? "white" : "rgb(28, 31, 35)"}
-            stroke="#5891db"
+            stroke="#ff6a3d"
             strokeWidth={2}
             cursor="nesw-resize"
             onPointerDown={(e) => e.isPrimary && handleResize(e, "bl")}
@@ -320,7 +320,7 @@ export default function Area({
             cy={data.y + data.height}
             r={6}
             fill={settings.mode === "light" ? "white" : "rgb(28, 31, 35)"}
-            stroke="#5891db"
+            stroke="#ff6a3d"
             strokeWidth={2}
             cursor="nwse-resize"
             onPointerDown={(e) => e.isPrimary && handleResize(e, "br")}

@@ -14,7 +14,7 @@ export default function New({ selectedTemplateId, setSelectedTemplateId }) {
       <div onClick={() => setSelectedTemplateId("blank")}>
         <div
           className={`rounded-md h-[180px] border-2 hover:border-dashed ${
-            selectedTemplateId === "blank" ? "border-blue-400" : "border-zinc-400"
+            selectedTemplateId === "blank" ? "border-[#ff6a3d]" : "border-zinc-400"
           }`}
         >
           <Thumbnail i="blank" diagram={{}} zoom={0.24} theme={settings.mode} />
@@ -29,7 +29,7 @@ export default function New({ selectedTemplateId, setSelectedTemplateId }) {
           <div
             className={`rounded-md h-[180px] border-2 hover:border-dashed ${
               selectedTemplateId === temp.templateId
-                ? "border-blue-400"
+                ? "border-[#ff6a3d]"
                 : "border-zinc-400"
             }`}
           >

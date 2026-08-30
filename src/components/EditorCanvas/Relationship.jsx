@@ -264,7 +264,7 @@ export default function Relationship({
           className="relationship-path"
           fill="none"
           cursor="pointer"
-          stroke={isSelected ? "#5891db" : undefined}
+          stroke={isSelected ? "#ff6a3d" : undefined}
           strokeWidth={isSelected ? 2.5 : undefined}
         />
         {settings.showRelationshipLabels && (
@@ -275,7 +275,7 @@ export default function Relationship({
             fontSize={labelFontSize}
             fontWeight={500}
             ref={labelRef}
-            className="group-hover:fill-sky-600"
+            className="group-hover:fill-[#ff6a3d]"
           >
             {data.name}
           </text>
@@ -303,7 +303,7 @@ export default function Relationship({
                 cx={p.x}
                 cy={p.y}
                 r={6}
-                fill="#5891db"
+                fill="#ff6a3d"
                 stroke="white"
                 strokeWidth={1.5}
                 style={{ cursor: "move" }}
@@ -334,7 +334,7 @@ export default function Relationship({
                       cy={mid.y}
                       r={4}
                       fill="white"
-                      stroke="#5891db"
+                      stroke="#ff6a3d"
                       strokeWidth={1.5}
                       style={{ cursor: "copy" }}
                       onPointerDown={(e) => {
@@ -351,7 +351,7 @@ export default function Relationship({
                     cy={pathMid.y}
                     r={4}
                     fill="white"
-                    stroke="#5891db"
+                    stroke="#ff6a3d"
                     strokeWidth={1.5}
                     style={{ cursor: "copy" }}
                     onPointerDown={(e) => {
@@ -410,7 +410,7 @@ function CardinalityLabel({ x, y, text, r = 12, padding = 14 }) {
         width={textWidth + padding}
         height={r * 2}
         fill="grey"
-        className="group-hover:fill-sky-600"
+        className="group-hover:fill-[#ff6a3d]"
       />
       <text
         ref={textRef}

@@ -42,7 +42,7 @@ export default function ColorPicker({
         </span>
         <button
           type="button"
-          className="text-xs text-sky-600 hover:underline"
+          className="text-xs text-[#ff6a3d] hover:underline"
           onClick={() => {
             setVisible(false);
             openColorTemplatesModal();
@@ -65,7 +65,7 @@ export default function ColorPicker({
                 }}
                 className={`h-5 w-5 rounded cursor-pointer border ${
                   colorId === tpl.id
-                    ? "ring-2 ring-offset-1 ring-sky-500 border-transparent"
+                    ? "ring-2 ring-offset-1 ring-[#ff6a3d] border-transparent"
                     : "border-black/20"
                 }`}
                 style={{ backgroundColor: tpl.value }}
