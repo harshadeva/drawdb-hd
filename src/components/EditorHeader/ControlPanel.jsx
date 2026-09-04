@@ -11,6 +11,7 @@ import {
   IconRedo,
   IconEdit,
   IconShareStroked,
+  IconSearch,
 } from "@douyinfe/semi-icons";
 import { Link, useMatch, useParams } from "react-router-dom";
 import Logo from "../Logo";
@@ -60,6 +61,7 @@ import {
   useDiagram,
   useUndoRedo,
   useSelect,
+  useSearch,
   useSaveState,
   useTypes,
   useNotes,
@@ -150,6 +152,7 @@ export default function ControlPanel({
   const { areas, setAreas, updateArea, addArea, deleteArea } = useAreas();
   const { undoStack, redoStack, setUndoStack, setRedoStack } = useUndoRedo();
   const { selectedElement, setSelectedElement } = useSelect();
+  const { searchOpen, toggleSearch } = useSearch();
   const { transform, setTransform } = useTransform();
   const { t, i18n } = useTranslation();
   const { version, gistId, setGistId } = useContext(IdContext);
@@ -1839,6 +1842,19 @@ export default function ControlPanel({
             {header()}
             <div className="flex items-center gap-2 me-7">
               <Slot name="header-actions-start" />
+              <Tooltip content={`${t("search_tables_columns")} (${
+                navigator.platform?.toLowerCase().includes("mac") ? "⌘" : "Ctrl"
+              }+F)`}>
+                <Button
+                  type="tertiary"
+                  theme={searchOpen ? "light" : "borderless"}
+                  className="!rounded-md"
+                  size="default"
+                  aria-label={t("search_tables_columns")}
+                  icon={<IconSearch />}
+                  onClick={toggleSearch}
+                />
+              </Tooltip>
               {!isTemplate && (
                 <Button
                   type="primary"

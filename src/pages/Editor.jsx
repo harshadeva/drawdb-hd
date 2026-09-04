@@ -3,6 +3,7 @@ import TransformContextProvider from "../context/TransformContext";
 import TablesContextProvider from "../context/DiagramContext";
 import UndoRedoContextProvider from "../context/UndoRedoContext";
 import SelectContextProvider from "../context/SelectContext";
+import SearchContextProvider from "../context/SearchContext";
 import AreasContextProvider from "../context/AreasContext";
 import NotesContextProvider from "../context/NotesContext";
 import TypesContextProvider from "../context/TypesContext";
@@ -22,21 +23,23 @@ export default function Editor() {
         <TransformContextProvider>
           <UndoRedoContextProvider>
             <SelectContextProvider>
-              <AreasContextProvider>
-                <NotesContextProvider>
-                  <TypesContextProvider>
-                    <EnumsContextProvider>
-                      <TablesContextProvider>
-                        <SaveStateContextProvider>
-                          <ColorPaletteContextProvider>
-                            <WorkSpace />
-                          </ColorPaletteContextProvider>
-                        </SaveStateContextProvider>
-                      </TablesContextProvider>
-                    </EnumsContextProvider>
-                  </TypesContextProvider>
-                </NotesContextProvider>
-              </AreasContextProvider>
+              <SearchContextProvider>
+                <AreasContextProvider>
+                  <NotesContextProvider>
+                    <TypesContextProvider>
+                      <EnumsContextProvider>
+                        <TablesContextProvider>
+                          <SaveStateContextProvider>
+                            <ColorPaletteContextProvider>
+                              <WorkSpace />
+                            </ColorPaletteContextProvider>
+                          </SaveStateContextProvider>
+                        </TablesContextProvider>
+                      </EnumsContextProvider>
+                    </TypesContextProvider>
+                  </NotesContextProvider>
+                </AreasContextProvider>
+              </SearchContextProvider>
             </SelectContextProvider>
           </UndoRedoContextProvider>
         </TransformContextProvider>

@@ -8,6 +8,7 @@ import {
   IconChevronDown,
   IconClose,
 } from "@douyinfe/semi-icons";
+import { useSearch } from "../../hooks";
 import { searchDiagram, SearchScope } from "../../utils/fuzzySearch";
 
 const SCOPE_STORAGE_KEY = "drawdb:canvasSearchScope";
@@ -24,8 +25,12 @@ const readStoredScope = () => {
 // A VS Code style "find" widget for the canvas: fuzzy-search table and column
 // names, narrow the hunt to tables / columns / both, step through the hits with
 // the carets (or Enter / Shift+Enter) and let the parent pan + flash the match.
+//
+// It is only mounted while open (toggled from the header button or Ctrl/Cmd+F),
+// so it never sits on top of the canvas during normal editing.
 export default function CanvasSearch({ tables, onNavigate }) {
   const { t } = useTranslation();
+  const { searchOpen, openSearch, closeSearch } = useSearch();
   const inputRef = useRef(null);
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState(readStoredScope);
@@ -33,8 +38,8 @@ export default function CanvasSearch({ tables, onNavigate }) {
   const [hasNavigated, setHasNavigated] = useState(false);
 
   const results = useMemo(
-    () => searchDiagram(tables, query, scope),
-    [tables, query, scope],
+    () => (searchOpen ? searchDiagram(tables, query, scope) : []),
+    [searchOpen, tables, query, scope],
   );
 
   // A fresh query or a changed scope restarts the walk from the top.
@@ -56,13 +61,26 @@ export default function CanvasSearch({ tables, onNavigate }) {
     }
   }, [scope]);
 
+  // Focus (and preselect) the field whenever the widget opens.
+  useEffect(() => {
+    if (searchOpen) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [searchOpen]);
+
   useHotkeys(
     "mod+f",
     () => {
-      inputRef.current?.focus();
-      inputRef.current?.select();
+      if (searchOpen) {
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      } else {
+        openSearch();
+      }
     },
     { preventDefault: true, enableOnFormTags: true },
+    [searchOpen],
   );
 
   const go = (dir) => {
@@ -90,10 +108,11 @@ export default function CanvasSearch({ tables, onNavigate }) {
     } else if (e.key === "Escape") {
       e.preventDefault();
       e.stopPropagation();
-      if (query) setQuery("");
-      else inputRef.current?.blur();
+      closeSearch();
     }
   };
+
+  if (!searchOpen) return null;
 
   const count = results.length;
   const hasQuery = query.trim().length > 0;
@@ -159,14 +178,10 @@ export default function CanvasSearch({ tables, onNavigate }) {
         </button>
         <button
           type="button"
-          title={t("clear")}
-          aria-label={t("clear")}
-          disabled={!hasQuery}
-          onClick={() => {
-            setQuery("");
-            inputRef.current?.focus();
-          }}
-          className="rounded p-1 hover-1 disabled:cursor-not-allowed disabled:opacity-30"
+          title={t("close")}
+          aria-label={t("close")}
+          onClick={closeSearch}
+          className="rounded p-1 hover-1"
         >
           <IconClose size="small" />
         </button>
