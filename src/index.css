@@ -278,5 +278,37 @@ html body[theme-mode="dark"] {
   stroke-width: 6;
   stroke-dasharray: 12 8;
   animation: dash-right 1s linear infinite;
-  
+
+}
+
+/*
+ * Canvas search: a one-shot "focus" glow when jumping to a matched table.
+ * Plays once (~1.1s) then the element is unmounted — nothing persists.
+ */
+@keyframes canvas-focus-glow {
+  0% {
+    opacity: 0;
+    stroke-width: 7;
+  }
+  12% {
+    opacity: 1;
+    stroke-width: 3;
+  }
+  55% {
+    opacity: 0.6;
+    stroke-width: 3;
+  }
+  100% {
+    opacity: 0;
+    stroke-width: 2;
+  }
+}
+
+.canvas-focus-glow {
+  fill: rgba(255, 106, 61, 0.1);
+  stroke: #ff6a3d;
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px rgba(255, 106, 61, 0.85))
+    drop-shadow(0 0 14px rgba(255, 106, 61, 0.45));
+  animation: canvas-focus-glow 1100ms ease-out forwards;
 }

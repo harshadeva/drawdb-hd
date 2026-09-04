@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Slot } from "../../context/ExtensionsContext";
 import {
   Action,
@@ -16,6 +16,7 @@ import Area from "./Area";
 import Relationship from "./Relationship";
 import Note from "./Note";
 import RelationshipToolbar from "./RelationshipToolbar";
+import CanvasSearch from "./CanvasSearch";
 import {
   useCanvas,
   useSettings,
@@ -114,6 +115,47 @@ export default function Canvas() {
   const { emitAwareness } = useCollab();
   const lastLinkingRef = useRef(false);
   const rightClickPanned = useRef(false);
+
+  // Canvas search: the table currently flashed by a "jump to match" — a
+  // one-shot glow, cleared again after the animation so nothing persists.
+  const [searchFocus, setSearchFocus] = useState(null);
+
+  useEffect(() => {
+    if (!searchFocus) return;
+    const timeout = setTimeout(() => setSearchFocus(null), 1200);
+    return () => clearTimeout(timeout);
+  }, [searchFocus]);
+
+  const focusSearchResult = useCallback(
+    (result) => {
+      if (!result) return;
+      const table = tables.find((tb) => tb.id === result.tableId);
+      if (!table) return;
+
+      const w = table.width ?? settings.tableWidth;
+      const h = getTableHeight(table, w, settings.showComments, relationships);
+
+      setTransform((prev) => ({
+        ...prev,
+        pan: { x: table.x + w / 2, y: table.y + h / 2 },
+      }));
+      setSelectedElement((prev) => ({
+        ...prev,
+        element: ObjectType.TABLE,
+        id: table.id,
+        open: false,
+      }));
+      setSearchFocus({ nonce: Date.now(), x: table.x, y: table.y, w, h });
+    },
+    [
+      tables,
+      relationships,
+      settings.tableWidth,
+      settings.showComments,
+      setTransform,
+      setSelectedElement,
+    ],
+  );
 
   useEffect(() => {
     if (linking) {
@@ -1119,6 +1161,9 @@ export default function Canvas() {
             )}
           </div>
         )}
+      {(layout.header || layout.sidebar || layout.toolbar) && (
+        <CanvasSearch tables={tables} onNavigate={focusSearchResult} />
+      )}
       <div
         className="w-full h-full"
         style={{
@@ -1218,6 +1263,18 @@ export default function Canvas() {
               stroke="red"
               strokeDasharray="8,8"
               className="pointer-events-none touch-none"
+            />
+          )}
+          {searchFocus && (
+            <rect
+              key={searchFocus.nonce}
+              className="canvas-focus-glow"
+              x={searchFocus.x - 8}
+              y={searchFocus.y - 8}
+              width={searchFocus.w + 16}
+              height={searchFocus.h + 16}
+              rx={10}
+              ry={10}
             />
           )}
           <Slot name="svg-overlay" />
