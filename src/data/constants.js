@@ -1,4 +1,5 @@
 export const defaultBlue = "#175e7a";
+export const defaultGroupColor = "#e8590c";
 export const defaultNoteTheme = "#fcf7ac";
 export const noteWidth = 180;
 export const noteRadius = 3;
@@ -56,6 +57,7 @@ export const Tab = {
   NOTES: "4",
   TYPES: "5",
   ENUMS: "6",
+  GROUPS: "7",
 };
 
 export const ObjectType = {
@@ -66,6 +68,7 @@ export const ObjectType = {
   RELATIONSHIP: 4,
   TYPE: 5,
   ENUM: 6,
+  GROUP: 7,
 };
 
 export const Action = {

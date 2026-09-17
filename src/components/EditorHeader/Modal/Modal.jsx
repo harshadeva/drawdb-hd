@@ -10,6 +10,7 @@ import {
   useAreas,
   useDiagram,
   useEnums,
+  useGroups,
   useNavigateWithParams,
   useNotes,
   useSettings,
@@ -58,6 +59,7 @@ export default function Modal({
   const { setTables, setRelationships, database } = useDiagram();
   const { setNotes } = useNotes();
   const { setAreas } = useAreas();
+  const { setGroups } = useGroups();
   const { setTypes } = useTypes();
   const { setEnums } = useEnums();
   const { setTransform } = useTransform();
@@ -91,6 +93,7 @@ export default function Modal({
     setRelationships(importData.relationships);
     setAreas(importData.subjectAreas ?? []);
     setNotes(importData.notes ?? []);
+    setGroups(importData.groups ?? []);
     if (importData.title) {
       setTitle(importData.title);
     }
@@ -148,6 +151,7 @@ export default function Modal({
         setTransform((prev) => ({ ...prev, pan: { x: 0, y: 0 } }));
         setNotes([]);
         setAreas([]);
+        setGroups([]);
       } else {
         setTables((prev) => [...prev, ...diagramData.tables]);
         setRelationships((prev) =>

@@ -69,6 +69,7 @@ import {
   useEnums,
   useFullscreen,
   useNavigateWithParams,
+  useGroups,
 } from "../../hooks";
 import { enterFullscreen, exitFullscreen } from "../../utils/fullscreen";
 import { dataURItoBlob } from "../../utils/utils";
@@ -150,6 +151,8 @@ export default function ControlPanel({
   const { types, addType, deleteType, updateType, setTypes } = useTypes();
   const { notes, setNotes, updateNote, addNote, deleteNote } = useNotes();
   const { areas, setAreas, updateArea, addArea, deleteArea } = useAreas();
+  const { groups, setGroups, addGroup, deleteGroup, updateGroup } =
+    useGroups();
   const { undoStack, redoStack, setUndoStack, setRedoStack } = useUndoRedo();
   const { selectedElement, setSelectedElement } = useSelect();
   const { searchOpen, toggleSearch } = useSearch();
@@ -202,6 +205,8 @@ export default function ControlPanel({
         deleteType(a.data.type.id, false);
       } else if (a.element === ObjectType.ENUM) {
         deleteEnum(a.data.enum.id, false);
+      } else if (a.element === ObjectType.GROUP) {
+        deleteGroup(a.data.id, false);
       }
       setRedoStack((prev) => [...prev, a]);
     } else if (a.action === Action.MOVE) {
@@ -236,6 +241,11 @@ export default function ControlPanel({
         addType(a.data, false);
       } else if (a.element === ObjectType.ENUM) {
         addEnum(a.data, false);
+      } else if (a.element === ObjectType.GROUP) {
+        addGroup(a.data.group, false);
+        a.data.tables.forEach((tbl) =>
+          updateTable(tbl.id, { groupIds: tbl.groupIds }),
+        );
       }
       setRedoStack((prev) => [...prev, a]);
     } else if (a.action === Action.EDIT) {
@@ -243,6 +253,8 @@ export default function ControlPanel({
         updateArea(a.aid, a.undo);
       } else if (a.element === ObjectType.NOTE) {
         updateNote(a.nid, a.undo);
+      } else if (a.element === ObjectType.GROUP) {
+        updateGroup(a.gid, a.undo);
       } else if (a.element === ObjectType.TABLE) {
         const table = tables.find((t) => t.id === a.tid);
         if (a.component === "field") {
@@ -410,6 +422,8 @@ export default function ControlPanel({
         addType(a.data, false);
       } else if (a.element === ObjectType.ENUM) {
         addEnum(a.data, false);
+      } else if (a.element === ObjectType.GROUP) {
+        addGroup(a.data, false);
       }
       setUndoStack((prev) => [...prev, a]);
     } else if (a.action === Action.MOVE) {
@@ -443,6 +457,8 @@ export default function ControlPanel({
         deleteType(a.data.type.id, false);
       } else if (a.element === ObjectType.ENUM) {
         deleteEnum(a.data.enum.id, false);
+      } else if (a.element === ObjectType.GROUP) {
+        deleteGroup(a.data.group.id, false);
       }
       setUndoStack((prev) => [...prev, a]);
     } else if (a.action === Action.EDIT) {
@@ -450,6 +466,8 @@ export default function ControlPanel({
         updateArea(a.aid, a.redo);
       } else if (a.element === ObjectType.NOTE) {
         updateNote(a.nid, a.redo);
+      } else if (a.element === ObjectType.GROUP) {
+        updateGroup(a.gid, a.redo);
       } else if (a.element === ObjectType.TABLE) {
         const table = tables.find((t) => t.id === a.tid);
         if (a.component === "field") {
@@ -1069,6 +1087,7 @@ export default function ControlPanel({
               relationships: relationships,
               notes: notes,
               subjectAreas: areas,
+              groups: groups,
               custom: 1,
               templateId: uuidv4(),
               ...(databases[database].hasEnums && { enums: enums }),
@@ -1105,6 +1124,7 @@ export default function ControlPanel({
             setRelationships([]);
             setAreas([]);
             setNotes([]);
+            setGroups([]);
             setTypes([]);
             setEnums([]);
             setUndoStack([]);
@@ -1380,6 +1400,7 @@ export default function ControlPanel({
                   relationships: relationships,
                   notes: notes,
                   subjectAreas: areas,
+                  groups: groups,
                   database: database,
                   ...(databases[database].hasTypes && { types: types }),
                   ...(databases[database].hasEnums && { enums: enums }),
@@ -1505,6 +1526,7 @@ export default function ControlPanel({
           setRelationships([]);
           setAreas([]);
           setNotes([]);
+          setGroups([]);
           setEnums([]);
           setTypes([]);
           setUndoStack([]);

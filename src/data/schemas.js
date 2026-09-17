@@ -76,8 +76,23 @@ export const tableSchema = {
       type: "array",
       items: { type: ["string"] },
     },
+    groupIds: {
+      type: "array",
+      items: { type: "string" },
+    },
   },
   required: ["id", "name", "x", "y", "fields", "comment", "indices", "color"],
+};
+
+export const groupSchema = {
+  type: "object",
+  properties: {
+    id: { type: "string", minLength: 1 },
+    name: { type: "string", minLength: 1 },
+    color: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
+    colorId: { type: ["string", "null"] },
+  },
+  required: ["id", "name", "color"],
 };
 
 export const areaSchema = {
@@ -273,6 +288,10 @@ export const jsonSchema = {
     colorTemplates: {
       type: "array",
       items: { ...colorTemplateSchema },
+    },
+    groups: {
+      type: "array",
+      items: { ...groupSchema },
     },
     title: { type: "string" },
     database: { type: "string" },

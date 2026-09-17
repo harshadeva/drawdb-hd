@@ -6,7 +6,13 @@ import {
   calcAnchors,
   calcWaypointPath,
 } from "../../utils/calcPath";
-import { useDiagram, useSettings, useLayout, useSelect } from "../../hooks";
+import {
+  useDiagram,
+  useSettings,
+  useLayout,
+  useSelect,
+  useGroupFocus,
+} from "../../hooks";
 import { useTranslation } from "react-i18next";
 import { SideSheet } from "@douyinfe/semi-ui";
 import RelationshipInfo from "../EditorSidePanel/RelationshipsTab/RelationshipInfo";
@@ -29,7 +35,24 @@ export default function Relationship({
   const { layout } = useLayout();
   const { selectedElement, setSelectedElement, setBulkSelectedElements } =
     useSelect();
+  const { focusedGroupIds } = useGroupFocus();
   const { t } = useTranslation();
+
+  const isDimmed = useMemo(() => {
+    if (!settings.dimGroupConnections || focusedGroupIds.size === 0)
+      return false;
+    const inFocus = (id) => {
+      const table = tables.find((tbl) => tbl.id === id);
+      return table?.groupIds?.some((gid) => focusedGroupIds.has(gid));
+    };
+    return !(inFocus(data.startTableId) || inFocus(data.endTableId));
+  }, [
+    settings.dimGroupConnections,
+    focusedGroupIds,
+    tables,
+    data.startTableId,
+    data.endTableId,
+  ]);
 
   const pathValues = useMemo(() => {
     const startTable = tables.find((t) => t.id === data.startTableId);
@@ -245,6 +268,7 @@ export default function Relationship({
     <>
       <g
         className="select-none group"
+        style={{ opacity: isDimmed ? 0.25 : 1, transition: "opacity 150ms" }}
         onDoubleClick={edit}
         onPointerDown={(e) => {
           if (e.isPrimary && e.button === 0) select();

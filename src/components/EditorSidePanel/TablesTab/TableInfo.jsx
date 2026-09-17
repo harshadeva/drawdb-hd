@@ -18,11 +18,18 @@ import {
 } from "@douyinfe/semi-icons";
 import {
   useDiagram,
+  useGroups,
   useLayout,
   useSaveState,
   useUndoRedo,
 } from "../../../hooks";
-import { Action, ObjectType, State, DB } from "../../../data/constants";
+import {
+  Action,
+  ObjectType,
+  State,
+  DB,
+  defaultGroupColor,
+} from "../../../data/constants";
 import TableField from "./TableField";
 import IndexDetails from "./IndexDetails";
 import UniqueConstraintDetails from "./UniqueConstraintDetails";
@@ -36,7 +43,10 @@ import {
 
 export default function TableInfo({ data }) {
   const { tables, database, relationships } = useDiagram();
+  const { groups, addGroup } = useGroups();
   const { t } = useTranslation();
+  const [showNewGroupPopover, setShowNewGroupPopover] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
   const [indexActiveKey, setIndexActiveKey] = useState("");
   const [uniqueActiveKey, setUniqueActiveKey] = useState("");
   const [commentActiveKey, setCommentActiveKey] = useState("");
@@ -100,6 +110,36 @@ export default function TableInfo({ data }) {
       return newStack;
     });
     setRedoStack([]);
+  };
+
+  const setGroupIds = (groupIds) => {
+    setUndoStack((prev) => [
+      ...prev,
+      {
+        action: Action.EDIT,
+        element: ObjectType.TABLE,
+        component: "self",
+        tid: data.id,
+        undo: { groupIds: data.groupIds ?? [] },
+        redo: { groupIds },
+        message: t("edit_table", { tableName: data.name, extra: "[groups]" }),
+      },
+    ]);
+    setRedoStack([]);
+    updateTable(data.id, { groupIds });
+  };
+
+  const createGroup = () => {
+    if (!newGroupName.trim()) return;
+    const group = addGroup({
+      id: nanoid(),
+      name: newGroupName.trim(),
+      color: defaultGroupColor,
+      colorId: null,
+    });
+    setGroupIds([...(data.groupIds ?? []), group.id]);
+    setNewGroupName("");
+    setShowNewGroupPopover(false);
   };
 
   const inheritedFieldNames =
@@ -379,6 +419,54 @@ export default function TableInfo({ data }) {
           </Collapse>
         </Card>
       )}
+
+      <div className="mb-2">
+        <div className="text-md font-semibold break-keep mb-1">
+          {t("groups")}:
+        </div>
+        <div className="flex gap-1 items-center">
+          <Select
+            multiple
+            value={data.groupIds ?? []}
+            optionList={groups.map((g) => ({ label: g.name, value: g.id }))}
+            onChange={(value) => {
+              if (layout.readOnly) return;
+              setGroupIds(value);
+            }}
+            placeholder={t("groups")}
+            className="grow"
+            disabled={layout.readOnly}
+          />
+          <Popover
+            visible={showNewGroupPopover}
+            onVisibleChange={setShowNewGroupPopover}
+            trigger="click"
+            position="top"
+            showArrow
+            content={
+              <div className="popover-theme p-1 w-[220px]">
+                <div className="font-semibold mb-2">{t("new_group")}</div>
+                <Input
+                  value={newGroupName}
+                  placeholder={t("name")}
+                  onChange={setNewGroupName}
+                  onEnterPress={createGroup}
+                  className="mb-2"
+                />
+                <Button block theme="solid" onClick={createGroup}>
+                  {t("add_group")}
+                </Button>
+              </div>
+            }
+          >
+            <Button
+              icon={<IconPlus />}
+              disabled={layout.readOnly}
+              title={t("new_group")}
+            />
+          </Popover>
+        </div>
+      </div>
 
       <div className="flex justify-between items-center gap-1 mt-5 mb-2">
         <ColorPicker

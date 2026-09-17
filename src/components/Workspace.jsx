@@ -27,6 +27,7 @@ import {
   useSaveState,
   useEnums,
   useNavigateWithParams,
+  useGroups,
 } from "../hooks";
 import FloatingControls from "./FloatingControls";
 import { Button, Modal, Tag } from "@douyinfe/semi-ui";
@@ -85,6 +86,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
   const { types, setTypes } = useTypes();
   const { areas, setAreas } = useAreas();
   const { notes, setNotes } = useNotes();
+  const { groups, setGroups } = useGroups();
   const { saveState, setSaveState } = useSaveState();
   const { transform, setTransform } = useTransform();
   const { enums, setEnums } = useEnums();
@@ -129,6 +131,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
         references: relationships,
         notes,
         areas,
+        groups,
         pan: transform.pan,
         zoom: transform.zoom,
         ...(databases[database].hasEnums && { enums }),
@@ -144,6 +147,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
       relationships,
       notes,
       areas,
+      groups,
       transform,
       enums,
       types,
@@ -194,6 +198,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
           references: relationships,
           notes: notes,
           areas: areas,
+          groups: groups,
           pan: transform.pan,
           zoom: transform.zoom,
           loadedFromGistId: loadedFromGistId,
@@ -220,6 +225,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
           references: relationships,
           notes: notes,
           areas: areas,
+          groups: groups,
           gistId: gistId ?? "",
           pan: transform.pan,
           zoom: transform.zoom,
@@ -246,6 +252,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
     relationships,
     notes,
     areas,
+    groups,
     types,
     title,
     transform,
@@ -317,6 +324,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
       setRelationships(diagram.references);
       setAreas(diagram.areas);
       setNotes(diagram.notes);
+      setGroups(diagram.groups ?? []);
       setTransform({ pan: diagram.pan, zoom: diagram.zoom });
       setTypes(diagram.types ?? []);
       setEnums(diagram.enums ?? []);
@@ -328,6 +336,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
       setRelationships([]);
       setAreas([]);
       setNotes([]);
+      setGroups([]);
       setTypes([]);
       setEnums([]);
       setUndoStack([]);
@@ -388,6 +397,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
       setRelationships(template.relationships);
       setAreas(template.subjectAreas);
       setNotes(template.notes);
+      setGroups(template.groups ?? []);
       setTransform({ zoom: 1, pan: { x: 0, y: 0 } });
       setUndoStack([]);
       setRedoStack([]);
@@ -411,6 +421,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
         setRelationships(parsed.relationships);
         setNotes(parsed.notes);
         setAreas(parsed.subjectAreas);
+        setGroups(parsed.groups ?? []);
         setTransform(parsed.transform);
         setTypes(parsed.types ?? []);
         setEnums(parsed.enums ?? []);
@@ -462,6 +473,7 @@ export default function WorkSpace({ forcedDiagramId } = {}) {
     setTables,
     setAreas,
     setNotes,
+    setGroups,
     setTypes,
     setDatabase,
     setEnums,

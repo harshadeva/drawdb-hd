@@ -34,6 +34,8 @@ import {
   useSelect,
   useUndoRedo,
   useColorPalette,
+  useGroups,
+  useGroupFocus,
 } from "../../hooks";
 import TableInfo from "../EditorSidePanel/TablesTab/TableInfo";
 import { useTranslation } from "react-i18next";
@@ -82,6 +84,19 @@ export default function Table({
 
   const { resolve: resolveColor } = useColorPalette();
   const tableColor = resolveColor(tableData);
+  const { groups } = useGroups();
+  const { focusedGroupIds } = useGroupFocus();
+  const tableGroups = useMemo(
+    () =>
+      (tableData.groupIds ?? [])
+        .map((id) => groups.find((g) => g.id === id))
+        .filter(Boolean),
+    [tableData.groupIds, groups],
+  );
+  const isDimmed =
+    focusedGroupIds.size > 0 &&
+    !(tableData.groupIds ?? []).some((id) => focusedGroupIds.has(id));
+  const MAX_VISIBLE_GROUP_CHIPS = 4;
   const resolveTypeColor = (rt) =>
     rt?.isCustom
       ? resolveColor({ color: rt.color, colorId: rt.colorId })
@@ -276,7 +291,11 @@ export default function Table({
                      ? "border-solid border-[#ff6a3d]"
                      : borderColor
                }`}
-          style={{ direction: "ltr" }}
+          style={{
+            direction: "ltr",
+            opacity: isDimmed ? 0.25 : 1,
+            transition: "opacity 150ms",
+          }}
         >
           {!relationshipMode && !layout.readOnly && startTableResize && (
             <>
@@ -319,6 +338,38 @@ export default function Table({
               <div className="px-3 overflow-hidden text-ellipsis whitespace-nowrap min-w-0 flex-1">
                 {tableData.name}
               </div>
+              {settings.showGroupChips && tableGroups.length > 0 && (
+                <div className="flex items-center gap-1 shrink-0">
+                  {tableGroups.slice(0, MAX_VISIBLE_GROUP_CHIPS).map((g) => (
+                    <div
+                      key={g.id}
+                      title={g.name}
+                      className={`w-2.5 h-2.5 rounded-full shrink-0 border ${
+                        settings.mode === "light"
+                          ? "border-white"
+                          : "border-zinc-900"
+                      }`}
+                      style={{
+                        backgroundColor: resolveColor({
+                          color: g.color,
+                          colorId: g.colorId,
+                        }),
+                      }}
+                    />
+                  ))}
+                  {tableGroups.length > MAX_VISIBLE_GROUP_CHIPS && (
+                    <span
+                      className="text-[10px] opacity-60"
+                      title={tableGroups
+                        .slice(MAX_VISIBLE_GROUP_CHIPS)
+                        .map((g) => g.name)
+                        .join(", ")}
+                    >
+                      +{tableGroups.length - MAX_VISIBLE_GROUP_CHIPS}
+                    </span>
+                  )}
+                </div>
+              )}
               <div className="hidden group-hover:flex items-center shrink-0 pe-2">
                 <ButtonGroup
                   type="tertiary"

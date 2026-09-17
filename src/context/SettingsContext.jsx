@@ -16,6 +16,8 @@ const defaultSettings = {
   tableWidth: tableWidth,
   showDebugCoordinates: false,
   showComments: false,
+  showGroupChips: true,
+  dimGroupConnections: false,
 };
 
 export const SettingsContext = createContext({
