@@ -10,7 +10,6 @@ import mariadb_icon from "../assets/mariadb.png";
 import sql_server_icon from "../assets/sql-server.png";
 import FadeIn from "../animations/FadeIn";
 import { languages } from "../i18n/i18n";
-import { socials } from "../data/socials";
 
 const primaryBtn =
   "inline-flex items-center justify-center gap-2 rounded-full bg-[#ff6a3d] px-7 py-3.5 font-semibold text-white shadow-[0_14px_34px_-12px_rgba(255,106,61,0.7)] transition-all duration-300 hover:bg-[#e8532a] hover:-translate-y-0.5";
@@ -20,7 +19,7 @@ const ghostBtn =
 export default function LandingPage() {
   useEffect(() => {
     document.body.setAttribute("theme-mode", "light");
-    document.title = "Dbraw — draw your database, row by row";
+    document.title = "Dbraw: draw your database, row by row";
   }, []);
 
   return (
@@ -281,26 +280,9 @@ export default function LandingPage() {
             <Link to="/templates" className="hover:text-white">
               Templates
             </Link>
-            <a
-              href={socials.docs}
-              className="hover:text-white"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Docs
-            </a>
             <Link to="/bug-report" className="hover:text-white">
               Report a bug
             </Link>
-            <a
-              href={socials.github}
-              className="hover:text-white"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <i className="bi bi-github me-1" />
-              GitHub
-            </a>
           </div>
         </div>
         <div className="border-t border-white/10 px-10 py-5 text-center text-xs text-white/45 md:px-6">

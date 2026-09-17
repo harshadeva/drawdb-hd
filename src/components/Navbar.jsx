@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { SideSheet } from "@douyinfe/semi-ui";
 import { IconMenu } from "@douyinfe/semi-icons";
 import Logo from "./Logo";
-import { socials } from "../data/socials";
 
 const navLinkClass =
   "text-[15px] font-semibold text-[#161422]/70 transition-colors duration-200 hover:text-[#161422]";
@@ -29,23 +28,6 @@ export default function Navbar() {
           <Link to="/templates" className={navLinkClass}>
             Templates
           </Link>
-          <a
-            href={socials.docs}
-            target="_blank"
-            rel="noreferrer"
-            className={navLinkClass}
-          >
-            Docs
-          </a>
-          <a
-            href={socials.github}
-            target="_blank"
-            rel="noreferrer"
-            className="text-xl text-[#161422]/60 transition-colors hover:text-[#161422]"
-            title="GitHub"
-          >
-            <i className="bi bi-github" />
-          </a>
           <Link
             to="/editor"
             className="rounded-full bg-[#161422] px-5 py-2.5 text-[15px] font-semibold text-white transition-all duration-300 hover:bg-[#2a2740]"
@@ -86,15 +68,6 @@ export default function Navbar() {
         >
           Templates
         </Link>
-        <hr className="border-[#e9e0d4]" />
-        <a
-          href={socials.docs}
-          target="_blank"
-          rel="noreferrer"
-          className="block p-3 text-base font-semibold hover:bg-[#fbf6f0]"
-        >
-          Docs
-        </a>
         <hr className="border-[#e9e0d4]" />
         <Link
           to="/bug-report"
