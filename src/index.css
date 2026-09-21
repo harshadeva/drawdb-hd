@@ -206,7 +206,10 @@ html body[theme-mode="dark"] {
 
 .bg-dots {
   background-color: #ffffff;
-  background-image: radial-gradient(rgba(255, 106, 61, 0.35) 1.4px, #ffffff 1.4px);
+  background-image: radial-gradient(
+    rgba(255, 106, 61, 0.35) 1.4px,
+    #ffffff 1.4px
+  );
   background-size: 22px 22px;
 }
 
@@ -269,16 +272,18 @@ html body[theme-mode="dark"] {
   stroke-width: 2.5;
   fill: none;
   stroke-linecap: butt;
-  transition: stroke 0.2s ease, stroke-width 0.2s ease;
+  transition:
+    stroke 0.2s ease,
+    stroke-width 0.2s ease;
   pointer-events: stroke;
 }
 
-.group:hover .relationship-path {
+.group:hover .relationship-path,
+.group.relationship-selected .relationship-path {
   stroke: #ff6a3d;
   stroke-width: 6;
   stroke-dasharray: 12 8;
   animation: dash-right 1s linear infinite;
-
 }
 
 /*

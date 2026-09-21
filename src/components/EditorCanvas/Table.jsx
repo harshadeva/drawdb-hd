@@ -93,9 +93,26 @@ export default function Table({
         .filter(Boolean),
     [tableData.groupIds, groups],
   );
-  const isDimmed =
+  const isDimmedByGroupFocus =
     focusedGroupIds.size > 0 &&
     !(tableData.groupIds ?? []).some((id) => focusedGroupIds.has(id));
+  const isDimmedByRelationshipSelect = useMemo(() => {
+    if (
+      !settings.dimUnrelatedOnRelationshipSelect ||
+      selectedElement.element !== ObjectType.RELATIONSHIP
+    )
+      return false;
+    const rel = relationships.find((r) => r.id === selectedElement.id);
+    if (!rel) return false;
+    return tableData.id !== rel.startTableId && tableData.id !== rel.endTableId;
+  }, [
+    settings.dimUnrelatedOnRelationshipSelect,
+    selectedElement.element,
+    selectedElement.id,
+    relationships,
+    tableData.id,
+  ]);
+  const isDimmed = isDimmedByGroupFocus || isDimmedByRelationshipSelect;
   const MAX_VISIBLE_GROUP_CHIPS = 4;
   const resolveTypeColor = (rt) =>
     rt?.isCustom

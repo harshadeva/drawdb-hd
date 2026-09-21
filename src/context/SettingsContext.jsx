@@ -13,6 +13,8 @@ const defaultSettings = {
   autosave: true,
   showCardinality: true,
   showRelationshipLabels: false,
+  showRelationshipHoverInfo: true,
+  dimUnrelatedOnRelationshipSelect: false,
   tableWidth: tableWidth,
   showDebugCoordinates: false,
   showComments: false,

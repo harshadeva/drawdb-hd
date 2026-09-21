@@ -282,6 +282,9 @@ const en = {
     share_info:
       "* Sharing this link will not create a live real-time collaboration session.",
     show_relationship_labels: "Show relationship labels",
+    show_relationship_hover_info: "Show relationship hover info",
+    dim_unrelated_on_relationship_select:
+      "Dim unrelated on relationship select",
     docs: "Docs",
     supported_types: "Supported file types:",
     bulk_update: "Bulk update",
@@ -331,10 +334,10 @@ const en = {
     type_name_required: "Type name is required",
     configure_table_templates: "Configure table templates",
     table_templates_description:
-      "Manage the reusable column layouts you've saved from existing tables. Pick one from the \"Add table\" menu to start a new table pre-filled with its columns.",
+      'Manage the reusable column layouts you\'ve saved from existing tables. Pick one from the "Add table" menu to start a new table pre-filled with its columns.',
     no_table_templates: "You do not have any table templates saved",
     no_table_templates_text:
-      "Open a table's editor and use \"Save columns as template\" to create one.",
+      'Open a table\'s editor and use "Save columns as template" to create one.',
     template_name_required: "Template name is required",
     columns: "Columns",
     save_columns_as_template: "Save columns as template",
@@ -343,9 +346,9 @@ const en = {
     template_fk_unresolved:
       "Table added, but couldn't recreate the foreign key(s) to {{tables}} — no table with that name exists in this diagram.",
     template_field_invalid:
-      "Every column in \"{{templateName}}\" needs a name and a type",
+      'Every column in "{{templateName}}" needs a name and a type',
     template_fk_table_required:
-      "The foreign key in \"{{templateName}}\" needs a referenced table name",
+      'The foreign key in "{{templateName}}" needs a referenced table name',
     configure_color_templates: "Configure color templates",
     color_templates: "Color templates",
     color_templates_description:
@@ -358,7 +361,7 @@ const en = {
     manage_color_templates: "Manage color templates",
     color_template_name_required: "Color template name is required",
     color_template_name_duplicate:
-      "A color template named \"{{name}}\" already exists",
+      'A color template named "{{name}}" already exists',
     add_foreign_key: "Add foreign key",
     remove_foreign_key: "Remove foreign key",
     referenced_table: "Referenced table",

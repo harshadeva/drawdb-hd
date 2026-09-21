@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Cardinality, ObjectType, Tab } from "../../data/constants";
 import {
   calcPath,
@@ -29,6 +30,7 @@ export default function Relationship({
   onWaypointDown,
   onSegmentDown,
   onWaypointRemove,
+  onPointerDown,
 }) {
   const { settings } = useSettings();
   const { tables, relationships } = useDiagram();
@@ -38,7 +40,7 @@ export default function Relationship({
   const { focusedGroupIds } = useGroupFocus();
   const { t } = useTranslation();
 
-  const isDimmed = useMemo(() => {
+  const isDimmedByGroupFocus = useMemo(() => {
     if (!settings.dimGroupConnections || focusedGroupIds.size === 0)
       return false;
     const inFocus = (id) => {
@@ -53,6 +55,13 @@ export default function Relationship({
     data.startTableId,
     data.endTableId,
   ]);
+
+  const isDimmedByRelationshipSelect =
+    settings.dimUnrelatedOnRelationshipSelect &&
+    selectedElement.element === ObjectType.RELATIONSHIP &&
+    selectedElement.id !== data.id;
+
+  const isDimmed = isDimmedByGroupFocus || isDimmedByRelationshipSelect;
 
   const pathValues = useMemo(() => {
     const startTable = tables.find((t) => t.id === data.startTableId);
@@ -211,14 +220,68 @@ export default function Relationship({
     selectedElement.element === ObjectType.RELATIONSHIP &&
     selectedElement.id === data.id;
 
-  const select = () => {
+  const hoverTooltipContent = useMemo(() => {
+    const startTable = tables.find((tb) => tb.id === data.startTableId);
+    const endTable = tables.find((tb) => tb.id === data.endTableId);
+    if (!startTable || !endTable) return "";
+    return `${startTable.name} -> ${endTable.name}`;
+  }, [tables, data.startTableId, data.endTableId]);
+
+  const [isHovered, setIsHovered] = useState(false);
+  const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
+  const showHoverTooltip =
+    settings.showRelationshipHoverInfo && isHovered && !!hoverTooltipContent;
+
+  const select = (id = data.id) => {
     setBulkSelectedElements([]);
     setSelectedElement((prev) => ({
       ...prev,
       element: ObjectType.RELATIONSHIP,
-      id: data.id,
+      id,
       open: false,
     }));
+  };
+
+  // When several relationship lines overlap on screen, only the topmost one
+  // ever receives the pointer event natively. Look at every relationship
+  // stacked under the cursor and, if one is already selected, step to the
+  // next one down so a repeated click reaches the lines underneath.
+  //
+  // The candidate set comes from the live DOM stack (elementsFromPoint), but
+  // the currently selected relationship is re-rendered on top so it's
+  // visible (see Canvas's orderedRelationships) — so the *paint* order
+  // shifts every time a selection changes. Indexing off that live order
+  // would just bounce between whichever two lines take turns being "on
+  // top". Cycling instead walks the relationships array's fixed order,
+  // which doesn't move when selection changes, so repeated clicks visit
+  // every overlapping line exactly once before wrapping around.
+  const selectAtPoint = (e) => {
+    const stack = document.elementsFromPoint(e.clientX, e.clientY);
+    const hitIds = new Set();
+    for (const el of stack) {
+      const host = el.closest?.("[data-relationship-id]");
+      if (host) hitIds.add(host.getAttribute("data-relationship-id"));
+    }
+    if (hitIds.size <= 1) {
+      select();
+      return;
+    }
+    // Stable order: position in `relationships`, ascending. The last entry
+    // is whichever one paints on top under normal (nothing-selected) paint
+    // order, so a fresh click still lands on the visually topmost line.
+    const stableIds = relationships
+      .map((r) => r.id)
+      .filter((id) => hitIds.has(id));
+    const currentId =
+      selectedElement.element === ObjectType.RELATIONSHIP
+        ? selectedElement.id
+        : null;
+    const currentIdx = currentId !== null ? stableIds.indexOf(currentId) : -1;
+    const nextIdx =
+      currentIdx === -1
+        ? stableIds.length - 1
+        : (currentIdx - 1 + stableIds.length) % stableIds.length;
+    select(stableIds[nextIdx]);
   };
 
   const edit = () => {
@@ -264,115 +327,105 @@ export default function Relationship({
 
   const showEditHandles = isSelected && !composite && !layout.readOnly;
 
-  return (
-    <>
-      <g
-        className="select-none group"
-        style={{ opacity: isDimmed ? 0.25 : 1, transition: "opacity 150ms" }}
-        onDoubleClick={edit}
-        onPointerDown={(e) => {
-          if (e.isPrimary && e.button === 0) select();
-        }}
-      >
-        {/* invisible wider path for better hover ux */}
-        <path
-          d={dPath}
-          fill="none"
-          stroke="transparent"
-          strokeWidth={12}
-          cursor="pointer"
-        />
-        <path
-          ref={pathRef}
-          d={dPath}
-          className="relationship-path"
-          fill="none"
-          cursor="pointer"
-          stroke={isSelected ? "#ff6a3d" : undefined}
-          strokeWidth={isSelected ? 2.5 : undefined}
-        />
-        {settings.showRelationshipLabels && (
-          <text
-            x={labelX}
-            y={labelY}
-            fill={settings.mode === "dark" ? "lightgrey" : "#333"}
-            fontSize={labelFontSize}
-            fontWeight={500}
-            ref={labelRef}
-            className="group-hover:fill-[#ff6a3d]"
-          >
-            {data.name}
-          </text>
-        )}
-        {(composite || pathRef.current) && settings.showCardinality && (
-          <>
-            <CardinalityLabel
-              x={cardinalityStartX}
-              y={cardinalityStartY}
-              text={cardinalityStart}
-            />
-            <CardinalityLabel
-              x={cardinalityEndX}
-              y={cardinalityEndY}
-              text={cardinalityEnd}
-            />
-          </>
-        )}
-        {showEditHandles && (
-          <g>
-            {/* existing bend points: drag to move, double-click to remove */}
-            {points.map((p, i) => (
-              <circle
-                key={`wp-${i}`}
-                cx={p.x}
-                cy={p.y}
-                r={6}
-                fill="#ff6a3d"
-                stroke="white"
-                strokeWidth={1.5}
-                style={{ cursor: "move" }}
-                onPointerDown={(e) => {
-                  if (!e.isPrimary || e.button !== 0) return;
-                  e.stopPropagation();
-                  onWaypointDown?.(data.id, i);
-                }}
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  onWaypointRemove?.(data.id, i);
-                }}
-              >
-                <title>{t("waypoint_hint")}</title>
-              </circle>
-            ))}
-            {/* add-bend handles at each segment midpoint */}
-            {hasWaypoints
-              ? vertices.slice(0, -1).map((v, i) => {
-                  const mid = {
-                    x: (v.x + vertices[i + 1].x) / 2,
-                    y: (v.y + vertices[i + 1].y) / 2,
-                  };
-                  return (
-                    <circle
-                      key={`add-${i}`}
-                      cx={mid.x}
-                      cy={mid.y}
-                      r={4}
-                      fill="white"
-                      stroke="#ff6a3d"
-                      strokeWidth={1.5}
-                      style={{ cursor: "copy" }}
-                      onPointerDown={(e) => {
-                        if (!e.isPrimary || e.button !== 0) return;
-                        e.stopPropagation();
-                        onSegmentDown?.(data.id, i, mid);
-                      }}
-                    />
-                  );
-                })
-              : pathMid && (
+  const relationshipGroup = (
+    <g
+      className={`select-none group${isSelected ? " relationship-selected" : ""}`}
+      data-relationship-id={data.id}
+      style={{ opacity: isDimmed ? 0.25 : 1, transition: "opacity 150ms" }}
+      onDoubleClick={edit}
+      onPointerDown={(e) => {
+        if (e.isPrimary && e.button === 0) {
+          selectAtPoint(e);
+          onPointerDown?.();
+        }
+      }}
+      onPointerEnter={(e) => {
+        setHoverPos({ x: e.clientX, y: e.clientY });
+        setIsHovered(true);
+      }}
+      onPointerMove={(e) => setHoverPos({ x: e.clientX, y: e.clientY })}
+      onPointerLeave={() => setIsHovered(false)}
+    >
+      {/* invisible wider path for better hover ux */}
+      <path
+        d={dPath}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={12}
+        cursor="pointer"
+      />
+      <path
+        ref={pathRef}
+        d={dPath}
+        className="relationship-path"
+        fill="none"
+        cursor="pointer"
+      />
+      {settings.showRelationshipLabels && (
+        <text
+          x={labelX}
+          y={labelY}
+          fill={settings.mode === "dark" ? "lightgrey" : "#333"}
+          fontSize={labelFontSize}
+          fontWeight={500}
+          ref={labelRef}
+          className="group-hover:fill-[#ff6a3d]"
+        >
+          {data.name}
+        </text>
+      )}
+      {(composite || pathRef.current) && settings.showCardinality && (
+        <>
+          <CardinalityLabel
+            x={cardinalityStartX}
+            y={cardinalityStartY}
+            text={cardinalityStart}
+          />
+          <CardinalityLabel
+            x={cardinalityEndX}
+            y={cardinalityEndY}
+            text={cardinalityEnd}
+          />
+        </>
+      )}
+      {showEditHandles && (
+        <g>
+          {/* existing bend points: drag to move, double-click to remove */}
+          {points.map((p, i) => (
+            <circle
+              key={`wp-${i}`}
+              cx={p.x}
+              cy={p.y}
+              r={6}
+              fill="#ff6a3d"
+              stroke="white"
+              strokeWidth={1.5}
+              style={{ cursor: "move" }}
+              onPointerDown={(e) => {
+                if (!e.isPrimary || e.button !== 0) return;
+                e.stopPropagation();
+                onWaypointDown?.(data.id, i);
+              }}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                onWaypointRemove?.(data.id, i);
+              }}
+            >
+              <title>{t("waypoint_hint")}</title>
+            </circle>
+          ))}
+          {/* add-bend handles at each segment midpoint */}
+          {hasWaypoints
+            ? vertices.slice(0, -1).map((v, i) => {
+                const mid = {
+                  x: (v.x + vertices[i + 1].x) / 2,
+                  y: (v.y + vertices[i + 1].y) / 2,
+                };
+                return (
                   <circle
-                    cx={pathMid.x}
-                    cy={pathMid.y}
+                    key={`add-${i}`}
+                    cx={mid.x}
+                    cy={mid.y}
                     r={4}
                     fill="white"
                     stroke="#ff6a3d"
@@ -381,13 +434,49 @@ export default function Relationship({
                     onPointerDown={(e) => {
                       if (!e.isPrimary || e.button !== 0) return;
                       e.stopPropagation();
-                      onSegmentDown?.(data.id, 0, pathMid);
+                      onSegmentDown?.(data.id, i, mid);
                     }}
                   />
-                )}
-          </g>
+                );
+              })
+            : pathMid && (
+                <circle
+                  cx={pathMid.x}
+                  cy={pathMid.y}
+                  r={4}
+                  fill="white"
+                  stroke="#ff6a3d"
+                  strokeWidth={1.5}
+                  style={{ cursor: "copy" }}
+                  onPointerDown={(e) => {
+                    if (!e.isPrimary || e.button !== 0) return;
+                    e.stopPropagation();
+                    onSegmentDown?.(data.id, 0, pathMid);
+                  }}
+                />
+              )}
+        </g>
+      )}
+    </g>
+  );
+
+  return (
+    <>
+      {relationshipGroup}
+      {showHoverTooltip &&
+        createPortal(
+          <div
+            className="fixed z-50 pointer-events-none select-none px-2 py-1 rounded-md text-xs font-medium text-white shadow-md"
+            style={{
+              left: hoverPos.x + 14,
+              top: hoverPos.y + 14,
+              backgroundColor: "rgba(0, 0, 0, 0.8)",
+            }}
+          >
+            {hoverTooltipContent}
+          </div>,
+          document.body,
         )}
-      </g>
       <SideSheet
         title={t("edit")}
         size="small"

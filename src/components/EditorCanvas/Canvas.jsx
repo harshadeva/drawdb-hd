@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Slot } from "../../context/ExtensionsContext";
 import {
   Action,
@@ -633,6 +633,20 @@ export default function Canvas() {
     }
   };
 
+  // Render the selected relationship last so it paints on top of any other
+  // lines it overlaps with — otherwise selecting one underneath a stack
+  // (see Relationship's selectAtPoint) would still be visually hidden.
+  const orderedRelationships = useMemo(() => {
+    if (selectedElement.element !== ObjectType.RELATIONSHIP)
+      return relationships;
+    const idx = relationships.findIndex((r) => r.id === selectedElement.id);
+    if (idx === -1) return relationships;
+    const reordered = relationships.slice();
+    const [selected] = reordered.splice(idx, 1);
+    reordered.push(selected);
+    return reordered;
+  }, [relationships, selectedElement.element, selectedElement.id]);
+
   /**
    * @param {PointerEvent} e
    */
@@ -663,16 +677,27 @@ export default function Canvas() {
     }
 
     if (isMouseLeftButton) {
+      // Relationships aren't draggable through the generic element flow
+      // (they have no x/y of their own), and clicking one shouldn't start a
+      // marquee-select — that would make collectSelectedElements() find
+      // nothing on pointerup and immediately clear the relationship's own
+      // selection.
+      const isRelationshipPointerDown =
+        elementPointerDown?.type === ObjectType.RELATIONSHIP;
+
       setBulkSelectRect({
         x1: pointer.spaces.diagram.x,
         y1: pointer.spaces.diagram.y,
         x2: pointer.spaces.diagram.x,
         y2: pointer.spaces.diagram.y,
-        show: elementPointerDown === null || !elementPointerDown.element.locked,
+        show:
+          elementPointerDown === null
+            ? true
+            : !isRelationshipPointerDown && !elementPointerDown.element.locked,
         ctrlKey: e.ctrlKey,
         metaKey: e.metaKey,
       });
-      if (elementPointerDown !== null) {
+      if (elementPointerDown !== null && !isRelationshipPointerDown) {
         handlePointerDownOnElement(e, elementPointerDown);
       }
       pointer.setStyle("crosshair");
@@ -774,7 +799,10 @@ export default function Canvas() {
 
     if (tableResize.id !== -1) {
       const table = tables.find((tb) => tb.id === tableResize.id);
-      if (table && (table.width ?? settings.tableWidth) !== tableResize.startWidth) {
+      if (
+        table &&
+        (table.width ?? settings.tableWidth) !== tableResize.startWidth
+      ) {
         setUndoStack((prev) => [
           ...prev,
           {
@@ -952,8 +980,10 @@ export default function Canvas() {
   // and end = parent (PK), so the value must be inverted. This matches what
   // dragging from a child FK field to a parent PK field already produces.
   const toStoredCardinality = (toolbarValue) => {
-    if (toolbarValue === Cardinality.ONE_TO_MANY) return Cardinality.MANY_TO_ONE;
-    if (toolbarValue === Cardinality.MANY_TO_ONE) return Cardinality.ONE_TO_MANY;
+    if (toolbarValue === Cardinality.ONE_TO_MANY)
+      return Cardinality.MANY_TO_ONE;
+    if (toolbarValue === Cardinality.MANY_TO_ONE)
+      return Cardinality.ONE_TO_MANY;
     return Cardinality.ONE_TO_ONE;
   };
 
@@ -1230,13 +1260,19 @@ export default function Canvas() {
               }}
             />
           ))}
-          {relationships.map((e) => (
+          {orderedRelationships.map((e) => (
             <Relationship
               key={e.id}
               data={e}
               onWaypointDown={startWaypointDrag}
               onSegmentDown={insertWaypointAndDrag}
               onWaypointRemove={removeWaypoint}
+              onPointerDown={() => {
+                elementPointerDown = {
+                  element: e,
+                  type: ObjectType.RELATIONSHIP,
+                };
+              }}
             />
           ))}
           {tables.map((table) => (

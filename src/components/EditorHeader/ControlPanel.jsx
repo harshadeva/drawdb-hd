@@ -151,8 +151,7 @@ export default function ControlPanel({
   const { types, addType, deleteType, updateType, setTypes } = useTypes();
   const { notes, setNotes, updateNote, addNote, deleteNote } = useNotes();
   const { areas, setAreas, updateArea, addArea, deleteArea } = useAreas();
-  const { groups, setGroups, addGroup, deleteGroup, updateGroup } =
-    useGroups();
+  const { groups, setGroups, addGroup, deleteGroup, updateGroup } = useGroups();
   const { undoStack, redoStack, setUndoStack, setRedoStack } = useUndoRedo();
   const { selectedElement, setSelectedElement } = useSelect();
   const { searchOpen, toggleSearch } = useSearch();
@@ -902,7 +901,7 @@ export default function ControlPanel({
   const save = async () => {
     if (typeof extensions.cloudSave === "function") {
       // TODO: dont have blank here have null
-      const isNew = diagramId === 'blank';
+      const isNew = diagramId === "blank";
       const newId = isNew ? uuidv4() : diagramId;
       const diagramData = {
         diagramId: newId,
@@ -1114,10 +1113,7 @@ export default function ControlPanel({
             if (typeof extensions.cloudDelete === "function") {
               await extensions.cloudDelete(diagramId);
             } else {
-              await db.diagrams
-                .where("diagramId")
-                .equals(diagramId)
-                .delete();
+              await db.diagrams.where("diagramId").equals(diagramId).delete();
             }
             setTitle("Untitled diagram");
             setTables([]);
@@ -1703,6 +1699,31 @@ export default function ControlPanel({
             showRelationshipLabels: !prev.showRelationshipLabels,
           })),
       },
+      show_relationship_hover_info: {
+        state: settings.showRelationshipHoverInfo ? (
+          <i className="bi bi-toggle-on" />
+        ) : (
+          <i className="bi bi-toggle-off" />
+        ),
+        function: () =>
+          setSettings((prev) => ({
+            ...prev,
+            showRelationshipHoverInfo: !prev.showRelationshipHoverInfo,
+          })),
+      },
+      dim_unrelated_on_relationship_select: {
+        state: settings.dimUnrelatedOnRelationshipSelect ? (
+          <i className="bi bi-toggle-on" />
+        ) : (
+          <i className="bi bi-toggle-off" />
+        ),
+        function: () =>
+          setSettings((prev) => ({
+            ...prev,
+            dimUnrelatedOnRelationshipSelect:
+              !prev.dimUnrelatedOnRelationshipSelect,
+          })),
+      },
       show_debug_coordinates: {
         state: settings.showDebugCoordinates ? (
           <i className="bi bi-toggle-on" />
@@ -1864,9 +1885,13 @@ export default function ControlPanel({
             {header()}
             <div className="flex items-center gap-2 me-7">
               <Slot name="header-actions-start" />
-              <Tooltip content={`${t("search_tables_columns")} (${
-                navigator.platform?.toLowerCase().includes("mac") ? "⌘" : "Ctrl"
-              }+F)`}>
+              <Tooltip
+                content={`${t("search_tables_columns")} (${
+                  navigator.platform?.toLowerCase().includes("mac")
+                    ? "⌘"
+                    : "Ctrl"
+                }+F)`}
+              >
                 <Button
                   type="tertiary"
                   theme={searchOpen ? "light" : "borderless"}
@@ -2195,8 +2220,10 @@ export default function ControlPanel({
                 }}
                 onClick={!layout.readOnly && (() => setModal(MODAL.RENAME))}
               >
-                <span>{(isTemplate ? "Templates" : "Diagrams")}</span>
-                <span className="select-none text-zinc-400 dark:text-zinc-500 mx-1">/</span>
+                <span>{isTemplate ? "Templates" : "Diagrams"}</span>
+                <span className="select-none text-zinc-400 dark:text-zinc-500 mx-1">
+                  /
+                </span>
                 <span>{title}</span>
                 {version && (
                   <Tag className="mt-1" color="blue" size="small">
