@@ -13,6 +13,7 @@ import {
 } from "../../../hooks";
 import { useTranslation } from "react-i18next";
 import { fromDBML } from "../../../utils/importFrom/dbml";
+import { decode } from "@toon-format/toon";
 
 export default function ImportDiagram({
   setImportData,
@@ -39,9 +40,10 @@ export default function ImportDiagram({
   };
 
   const loadJsonData = (file, e) => {
+    const isToon = file.name.split(".").pop() === "toon";
     let jsonObject = null;
     try {
-      jsonObject = JSON.parse(e.target.result);
+      jsonObject = isToon ? decode(e.target.result) : JSON.parse(e.target.result);
     } catch (error) {
       setError({
         type: STATUS.ERROR,
@@ -50,7 +52,15 @@ export default function ImportDiagram({
       return;
     }
 
-    if (file.type === "application/json") {
+    if (isToon) {
+      if (!jsonDiagramIsValid(jsonObject)) {
+        setError({
+          type: STATUS.ERROR,
+          message: "The file is missing necessary properties for a diagram.",
+        });
+        return;
+      }
+    } else if (file.type === "application/json") {
       if (!jsonDiagramIsValid(jsonObject)) {
         setError({
           type: STATUS.ERROR,
@@ -141,6 +151,8 @@ export default function ImportDiagram({
     switch (importFrom) {
       case IMPORT_FROM.JSON:
         return "application/json,.ddb";
+      case IMPORT_FROM.TOON:
+        return ".toon";
       case IMPORT_FROM.DBML:
         return ".dbml";
       default:
@@ -152,6 +164,8 @@ export default function ImportDiagram({
     switch (importFrom) {
       case IMPORT_FROM.JSON:
         return `${t("supported_types")} JSON, DDB`;
+      case IMPORT_FROM.TOON:
+        return `${t("supported_types")} TOON`;
       case IMPORT_FROM.DBML:
         return `${t("supported_types")} DBML`;
       default:
@@ -170,7 +184,8 @@ export default function ImportDiagram({
           }
           const reader = new FileReader();
           reader.onload = async (e) => {
-            if (importFrom == IMPORT_FROM.JSON) loadJsonData(f, e);
+            if (importFrom == IMPORT_FROM.JSON || importFrom == IMPORT_FROM.TOON)
+              loadJsonData(f, e);
             if (importFrom == IMPORT_FROM.DBML) loadDBMLData(e);
           };
           reader.readAsText(f);

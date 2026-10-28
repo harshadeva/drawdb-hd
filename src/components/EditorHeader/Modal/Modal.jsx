@@ -42,6 +42,7 @@ const extensionToLanguage = {
   sql: "sql",
   dbml: "dbml",
   json: "json",
+  toon: "plaintext",
 };
 
 export default function Modal({

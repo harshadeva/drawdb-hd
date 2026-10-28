@@ -93,6 +93,7 @@ import { socials } from "../../data/socials";
 import { toDBML } from "../../utils/exportAs/dbml";
 import { exportSavedData } from "../../utils/exportSavedData";
 import { nanoid } from "nanoid";
+import { encode } from "@toon-format/toon";
 import { getTableHeight } from "../../utils/utils";
 import { deleteFromCache, STORAGE_KEY } from "../../utils/cache";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -119,6 +120,18 @@ export default function ControlPanel({
     data: null,
     filename: `${title}_${new Date().toISOString()}`,
     extension: "",
+  });
+
+  const getDiagramExport = () => ({
+    tables: tables,
+    relationships: relationships,
+    notes: notes,
+    subjectAreas: areas,
+    groups: groups,
+    database: database,
+    ...(databases[database].hasTypes && { types: types }),
+    ...(databases[database].hasEnums && { enums: enums }),
+    title: title,
   });
 
   const openExportModal = (modalType) => {
@@ -1145,6 +1158,14 @@ export default function ControlPanel({
           {
             function: () => {
               setModal(MODAL.IMPORT);
+              setImportFrom(IMPORT_FROM.TOON);
+            },
+            name: "TOON",
+            disabled: layout.readOnly,
+          },
+          {
+            function: () => {
+              setModal(MODAL.IMPORT);
               setImportFrom(IMPORT_FROM.DBML);
             },
             name: "DBML",
@@ -1390,25 +1411,22 @@ export default function ControlPanel({
             name: "JSON",
             function: () => {
               openExportModal(MODAL.CODE);
-              const result = JSON.stringify(
-                {
-                  tables: tables,
-                  relationships: relationships,
-                  notes: notes,
-                  subjectAreas: areas,
-                  groups: groups,
-                  database: database,
-                  ...(databases[database].hasTypes && { types: types }),
-                  ...(databases[database].hasEnums && { enums: enums }),
-                  title: title,
-                },
-                null,
-                2,
-              );
+              const result = JSON.stringify(getDiagramExport(), null, 2);
               setExportData((prev) => ({
                 ...prev,
                 data: result,
                 extension: "json",
+              }));
+            },
+          },
+          {
+            name: "TOON",
+            function: () => {
+              openExportModal(MODAL.CODE);
+              setExportData((prev) => ({
+                ...prev,
+                data: encode(getDiagramExport()),
+                extension: "toon",
               }));
             },
           },
